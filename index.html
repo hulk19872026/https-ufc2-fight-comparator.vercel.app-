@@ -1373,7 +1373,12 @@ Be direct and specific. Use the stats to back your points. Keep it under 400 wor
     });
 
     if (!response.ok) {
-      throw new Error(`API error ${response.status}`);
+      let errMsg = `HTTP ${response.status}`;
+      try {
+        const errJson = await response.json();
+        errMsg = errJson.error || errMsg;
+      } catch {}
+      throw new Error(errMsg);
     }
 
     panel.innerHTML = `
@@ -1415,11 +1420,27 @@ Be direct and specific. Use the stats to back your points. Keep it under 400 wor
     btn.disabled = false;
 
   } catch (err) {
+    const msg = err.message || 'Unknown error';
+    const isKeyMissing = msg.toLowerCase().includes('anthropic_api_key') || msg.toLowerCase().includes('not set') || msg.toLowerCase().includes('environment');
+    const is404 = msg.includes('404') || msg.includes('not found');
+    const is401 = msg.includes('401') || msg.includes('unauthorized') || msg.includes('authentication');
+    const is500 = msg.includes('500');
+
+    let hint = '';
+    if (is404) {
+      hint = '<strong>404 — the /api/analyze function was not found.</strong><br>Make sure the <code>api/analyze.js</code> file is in your GitHub repo inside a folder called <code>api</code>, then redeploy on Vercel.';
+    } else if (isKeyMissing || is500) {
+      hint = '<strong>API key missing or not loaded.</strong><br>1. Go to Vercel → your project → Settings → Environment Variables<br>2. Add <code>ANTHROPIC_API_KEY</code> with your key<br>3. Go to Deployments → three dots → Redeploy';
+    } else if (is401) {
+      hint = '<strong>Invalid API key.</strong><br>Your key may be wrong or expired. Get a fresh one from <code>console.anthropic.com</code> → API Keys, then update it in Vercel Environment Variables and redeploy.';
+    } else {
+      hint = '<strong>Check your browser console (F12) for more detail.</strong>';
+    }
+
     panel.innerHTML = `
       <div class="ai-panel">
         <div class="ai-error">
-          Unable to load AI analysis. Make sure you are running this app through Vercel with a valid Anthropic API key configured, or open it via the Claude.ai artifacts panel.<br><br>
-          <strong>To enable:</strong> Add your Anthropic API key as an environment variable <code>ANTHROPIC_API_KEY</code> in your Vercel project settings, then redeploy.
+          <strong>Error: ${msg}</strong><br><br>${hint}
         </div>
       </div>`;
     btn.innerHTML = '<span class="btn-icon">⚡</span> Deep AI Analysis';
