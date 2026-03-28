@@ -1,6 +1,5 @@
-// Vercel Serverless Function — proxies Anthropic API
-// File must live at /api/analyze.js
-// Vercel auto-routes requests to /api/analyze here
+// api/analyze.js — Vercel Serverless Function
+// Standard CommonJS format, no Edge runtime
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,14 +14,26 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Debug: log all env var keys (not values) to Vercel logs
+  const envKeys = Object.keys(process.env).filter(k => k.includes('ANTHROPIC'));
+  console.log('ANTHROPIC env keys found:', envKeys);
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
+
   if (!apiKey) {
+    console.error('ANTHROPIC_API_KEY is undefined. Available keys:', Object.keys(process.env).slice(0, 20));
     return res.status(500).json({
-      error: 'ANTHROPIC_API_KEY is not set. Go to Vercel project Settings → Environment Variables, add ANTHROPIC_API_KEY, then Redeploy.'
+      error: 'ANTHROPIC_API_KEY is not set in this deployment. Try: Vercel Dashboard → Settings → Environment Variables → confirm ANTHROPIC_API_KEY exists → Redeploy from scratch (not just a retry).'
     });
   }
 
-  const { messages } = req.body;
+  if (!apiKey.startsWith('sk-ant-')) {
+    return res.status(500).json({
+      error: 'ANTHROPIC_API_KEY looks invalid — it should start with sk-ant-. Check the value in Vercel Environment Variables.'
+    });
+  }
+
+  const { messages } = req.body || {};
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Invalid request — messages array required' });
   }
@@ -45,7 +56,10 @@ module.exports = async function handler(req, res) {
 
     if (!upstream.ok) {
       const errText = await upstream.text();
-      return res.status(upstream.status).json({ error: 'Anthropic API error ' + upstream.status + ': ' + errText });
+      console.error('Anthropic API error:', upstream.status, errText);
+      return res.status(upstream.status).json({
+        error: 'Anthropic API returned ' + upstream.status + ': ' + errText
+      });
     }
 
     res.setHeader('Content-Type', 'text/event-stream');
@@ -63,7 +77,7 @@ module.exports = async function handler(req, res) {
 
     res.end();
   } catch (err) {
-    console.error('Proxy error:', err);
+    console.error('Handler error:', err);
     if (!res.headersSent) {
       res.status(500).json({ error: 'Server error: ' + err.message });
     }
