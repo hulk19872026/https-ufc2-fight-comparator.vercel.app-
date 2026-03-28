@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UFC Fight Night 271 — Fighter Comparator</title>
+  <meta name="description" content="Live UFC Fight Night 271 fighter stats comparator. Compare all 13 fights on the Adesanya vs Pyfer card with win probabilities and predicted win methods." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥊</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0b;
+      --bg2: #111114;
+      --bg3: #18181c;
+      --bg4: #1e1e24;
+      --border: rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.12);
+      --text: #f0f0f0;
+      --text2: #a0a0a8;
+      --text3: #5a5a65;
+      --blue: #3b82f6;
+      --blue-dim: #1d4ed8;
+      --blue-bg: rgba(59,130,246,0.12);
+      --red: #ef4444;
+      --red-dim: #b91c1c;
+      --red-bg: rgba(239,68,68,0.12);
+      --gold: #f59e0b;
+      --green: #22c55e;
+      --green-bg: rgba(34,197,94,0.1);
+      --amber-bg: rgba(245,158,11,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* HEADER */
+    .header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.25rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .header-left { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      color: var(--text);
+    }
+    .logo span { color: var(--red); }
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--red-bg);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--red);
+      letter-spacing: .04em;
+    }
+    .live-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.25} }
+    .event-info {
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: .03em;
+    }
+
+    /* MAIN */
+    .main {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 1.25rem 1rem 3rem;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 1.25rem;
+      background: var(--bg3);
+      border-radius: 10px;
+      padding: 4px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text2);
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all .18s;
+      border: none;
+      background: transparent;
+      font-family: 'Barlow', sans-serif;
+    }
+    .tab:hover { color: var(--text); background: var(--bg4); }
+    .tab.active { background: var(--bg4); color: var(--text); border: 1px solid var(--border2); }
+
+    /* DROPDOWN */
+    .dropdown-section { margin-bottom: 1.25rem; }
+    .dropdown-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 6px;
+    }
+    .select-wrap { position: relative; }
+    .select-wrap select {
+      width: 100%;
+      padding: 11px 40px 11px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      appearance: none;
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      transition: border-color .15s;
+    }
+    .select-wrap select:focus { outline: none; border-color: var(--blue); }
+    .select-wrap select option { background: #1a1a22; }
+    .select-wrap select optgroup { color: var(--text3); font-size: 11px; }
+    .chevron {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text3);
+      font-size: 12px;
+    }
+
+    /* VS BAR */
+    .vs-bar {
+      display: grid;
+      grid-template-columns: 1fr 64px 1fr;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 1rem;
+    }
+    .f-blue { text-align: right; }
+    .f-red { text-align: left; }
+    .f-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      line-height: 1.2;
+    }
+    .f-nick { font-size: 10px; color: var(--text3); margin-top: 2px; font-style: italic; }
+    .f-rec { font-size: 12px; font-weight: 500; margin-top: 3px; }
+    .f-form { font-size: 10px; color: var(--text3); margin-top: 2px; letter-spacing: .08em; }
+    .rank-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      letter-spacing: .04em;
+    }
+    .rank-blue { background: var(--blue-bg); color: var(--blue); }
+    .rank-red { background: var(--red-bg); color: var(--red); }
+    .vs-center { text-align: center; }
+    .vs-pill {
+      background: var(--bg4);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text2);
+      letter-spacing: .05em;
+    }
+    .weight-class {
+      font-size: 9px;
+      color: var(--text3);
+      margin-bottom: 6px;
+      letter-spacing: .04em;
+    }
+
+    /* WIN METHOD BOX */
+    .wm-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 1rem;
+    }
+    .wm-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .wm-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+    .wm-pick {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding: 3px 12px;
+      border-radius: 20px;
+    }
+    .wm-ko { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,.2); }
+    .wm-sub { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(59,130,246,.2); }
+    .wm-dec { background: var(--green-bg); color: var(--green); border: 1px solid rgba(34,197,94,.2); }
+    .wm-tko { background: var(--amber-bg); color: var(--gold); border: 1px solid rgba(245,158,11,.2); }
+    .wm-reason { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+    /* STAT SECTIONS */
+    .section { margin-bottom: 1rem; }
+    .section-title {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-row {
+      display: grid;
+      grid-template-columns: 1fr 110px 1fr;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+    .sv-l { text-align: right; font-size: 13px; font-weight: 500; }
+    .sv-r { text-align: left; font-size: 13px; font-weight: 500; }
+    .sl { text-align: center; font-size: 10px; color: var(--text3); line-height: 1.3; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 1fr 110px 1fr;
+      gap: 4px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .bar-track { height: 4px; border-radius: 3px; background: var(--bg4); overflow: hidden; }
+    .bar-l .bar-fill { height: 100%; border-radius: 3px; background: var(--blue); float: right; }
+    .bar-r .bar-fill { height: 100%; border-radius: 3px; background: var(--red); }
+    .adv-l { color: var(--blue); }
+    .adv-r { color: var(--red); }
+
+    /* FINISH GRID */
+    .finish-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .finish-card {
+      background: var(--bg4);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .finish-card h4 {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 7px;
+    }
+    .finish-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+    .finish-type { font-size: 11px; color: var(--text2); }
+    .finish-val { font-size: 12px; font-weight: 500; }
+    .finish-rate-row {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* PROBABILITY */
+    .prob-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .prob-card {
+      background: var(--bg4);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .prob-pct {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+    .prob-name { font-size: 11px; color: var(--text2); }
+    .prob-pct-blue { color: var(--blue); }
+    .prob-pct-red { color: var(--red); }
+    .prob-bar-track {
+      height: 7px;
+      border-radius: 4px;
+      background: var(--bg4);
+      overflow: hidden;
+      display: flex;
+      margin-bottom: 4px;
+    }
+    .pb-blue { background: var(--blue); height: 100%; }
+    .pb-red { background: var(--red); height: 100%; }
+    .prob-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text3);
+      margin-bottom: 1rem;
+    }
+
+    /* DRAFTKINGS ODDS */
+    .odds-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 1rem;
+    }
+    .odds-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .odds-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+    .dk-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(98,203,93,0.12);
+      color: #62cb5d;
+      border: 1px solid rgba(98,203,93,0.2);
+      letter-spacing: .04em;
+    }
+    .odds-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    .odds-card {
+      background: var(--bg4);
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .odds-fighter { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+    .odds-line {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .odds-fav { color: var(--red); }
+    .odds-dog { color: var(--gold); }
+    .odds-pick { color: var(--blue); }
+    .odds-implied { font-size: 10px; color: var(--text3); margin-top: 3px; }
+    .odds-note { font-size: 11px; color: var(--text3); text-align: center; font-style: italic; }
+    .odds-props { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .odds-prop {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--bg4);
+      color: var(--text3);
+      border: 1px solid var(--border);
+    }
+    .odds-prop span { color: var(--gold); font-weight: 600; }
+
+    /* TALENT LEVEL */
+    .talent-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 1rem;
+    }
+    .talent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .talent-card {
+      background: var(--bg4);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .talent-card h5 {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+    .talent-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+    .talent-label { font-size: 10px; color: var(--text3); }
+    .talent-stars { display: flex; gap: 2px; }
+    .star { width: 8px; height: 8px; border-radius: 1px; }
+    .star-on { background: var(--gold); }
+    .star-off { background: var(--bg3); border: 1px solid var(--border2); }
+    .tier-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: .04em;
+      margin-top: 5px;
+    }
+    .tier-elite { background: rgba(245,158,11,.15); color: var(--gold); border: 1px solid rgba(245,158,11,.25); }
+    .tier-contender { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(59,130,246,.2); }
+    .tier-prospect { background: var(--green-bg); color: var(--green); border: 1px solid rgba(34,197,94,.2); }
+    .tier-veteran { background: rgba(160,160,168,.1); color: var(--text2); border: 1px solid var(--border2); }
+    .tier-gatekeeper { background: rgba(160,160,168,.08); color: var(--text3); border: 1px solid var(--border); }
+
+    /* NOTABLE WINS */
+    .wins-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 1rem;
+    }
+    .wins-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .wins-card {
+      background: var(--bg4);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .wins-card h5 {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+    .win-entry { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 5px; }
+    .win-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+    .win-dot-blue { background: var(--blue); }
+    .win-dot-red { background: var(--red); }
+    .win-name { font-size: 11px; color: var(--text); line-height: 1.3; }
+    .win-detail { font-size: 10px; color: var(--text3); }
+    .hof-badge {
+      display: inline-block;
+      font-size: 8px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: rgba(245,158,11,.2);
+      color: var(--gold);
+      border: 1px solid rgba(245,158,11,.3);
+      margin-left: 4px;
+      letter-spacing: .04em;
+      vertical-align: middle;
+    }
+    .champ-badge {
+      display: inline-block;
+      font-size: 8px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: rgba(59,130,246,.15);
+      color: var(--blue);
+      border: 1px solid rgba(59,130,246,.25);
+      margin-left: 4px;
+      letter-spacing: .04em;
+      vertical-align: middle;
+    }
+    .no-wins { font-size: 11px; color: var(--text3); font-style: italic; }
+
+    /* ANALYSIS */
+    .analysis-box {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .analysis-edge {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      margin-bottom: 8px;
+    }
+    .analysis-p { font-size: 12px; color: var(--text2); line-height: 1.65; margin-bottom: 5px; }
+    .deep-btn {
+      margin-top: 10px;
+      padding: 8px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: 1px solid var(--blue);
+      background: var(--blue-bg);
+      color: var(--blue);
+      cursor: pointer;
+      font-family: 'Barlow', sans-serif;
+      transition: all .18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: .02em;
+    }
+    .deep-btn:hover { background: var(--blue); color: #fff; }
+    .deep-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .deep-btn .btn-icon { font-size: 14px; }
+
+    /* AI ANALYSIS PANEL */
+    .ai-panel {
+      margin-top: 14px;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+    .ai-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .ai-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+    .ai-model-badge {
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--blue-bg);
+      color: var(--blue);
+      border: 1px solid rgba(59,130,246,.2);
+    }
+    .ai-content {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.75;
+      white-space: pre-wrap;
+    }
+    .ai-content strong { color: var(--text); font-weight: 600; }
+    .ai-thinking {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text3);
+    }
+    .ai-thinking-dots span {
+      display: inline-block;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--blue);
+      margin: 0 2px;
+      animation: dotpulse 1.2s infinite;
+    }
+    .ai-thinking-dots span:nth-child(2) { animation-delay: .2s; }
+    .ai-thinking-dots span:nth-child(3) { animation-delay: .4s; }
+    @keyframes dotpulse { 0%,80%,100%{opacity:.2;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+    .ai-error {
+      font-size: 12px;
+      color: var(--red);
+      padding: 8px 12px;
+      background: var(--red-bg);
+      border-radius: 8px;
+      border: 1px solid rgba(239,68,68,.2);
+    }
+
+    /* CUSTOM TAB */
+    .custom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+    .custom-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .custom-card h4 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      margin-bottom: 12px;
+    }
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 8px;
+    }
+    .input-row label { font-size: 10px; color: var(--text3); letter-spacing: .04em; }
+    .input-row input {
+      padding: 6px 9px;
+      font-size: 12px;
+      background: var(--bg4);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-family: 'Barlow', sans-serif;
+      transition: border-color .15s;
+    }
+    .input-row input:focus { outline: none; border-color: var(--blue); }
+    .compare-btn {
+      width: 100%;
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: .05em;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .compare-btn:hover { background: var(--blue-dim); }
+    #customResult { margin-top: 1.25rem; }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      font-size: 11px;
+      color: var(--text3);
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* MOBILE */
+    @media (max-width: 520px) {
+      .custom-grid { grid-template-columns: 1fr; }
+      .vs-bar { grid-template-columns: 1fr 48px 1fr; padding: 10px; gap: 6px; }
+      .f-name { font-size: 13px; }
+      .stat-row { grid-template-columns: 1fr 90px 1fr; }
+      .bar-row { grid-template-columns: 1fr 90px 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="logo">UFC<span>Stats</span></div>
+      <div class="live-badge"><span class="live-dot"></span>LIVE</div>
+    </div>
+    <div class="event-info">Fight Night 271 · Seattle · Mar 28, 2026</div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('card', this)">Full Card</button>
+    <button class="tab" onclick="switchTab('custom', this)">Custom Fighter</button>
+  </div>
+
+  <!-- CARD TAB -->
+  <div id="cardTab">
+    <div class="dropdown-section">
+      <div class="dropdown-label">Select a fight</div>
+      <div class="select-wrap">
+        <select id="fightPicker" onchange="selectFight(this.value)">
+          <optgroup label="── MAIN CARD · 8 PM ET ──">
+            <option value="0">🏆 Main Event · MW — Adesanya vs. Pyfer</option>
+            <option value="1">Co-Main · W. Flyweight — Grasso vs. Barber</option>
+            <option value="2">Welterweight — Chiesa vs. Price (Retirement)</option>
+            <option value="3">Featherweight — Erosa vs. Douglas</option>
+            <option value="4">Middleweight — Abdul-Malik vs. Belgaroui</option>
+            <option value="5">Lightweight — McKinney vs. Nelson</option>
+          </optgroup>
+          <optgroup label="── PRELIMINARY CARD · 5 PM ET ──">
+            <option value="6">Featured Prelim · LW — Bahamondes vs. Musayev</option>
+            <option value="7">Lightweight — Hooper vs. Gibson Jr.</option>
+            <option value="8">Heavyweight — Tybura vs. Fortune</option>
+            <option value="9">W. Flyweight — O'Neill vs. Fernandes</option>
+            <option value="10">Light Heavyweight — Stirling vs. Lopes</option>
+            <option value="11">Bantamweight — Simon vs. Yanez</option>
+            <option value="12">W. Strawweight — Thainara vs. Brasil</option>
+          </optgroup>
+        </select>
+        <div class="chevron">▼</div>
+      </div>
+    </div>
+    <div id="fightDisplay"></div>
+  </div>
+
+  <!-- CUSTOM TAB -->
+  <div id="customTab" style="display:none">
+    <div class="custom-grid">
+      <div class="custom-card">
+        <h4 style="color:var(--blue)">🔵 Fighter A — Blue Corner</h4>
+        <div class="input-row"><label>Name</label><input id="ca-name" value="Fighter A" /></div>
+        <div class="input-row"><label>Record (W-L)</label><input id="ca-rec" value="20-3" /></div>
+        <div class="input-row"><label>Age</label><input id="ca-age" type="number" value="28" min="18" max="50" /></div>
+        <div class="input-row"><label>Reach (inches)</label><input id="ca-reach" type="number" value="74" /></div>
+        <div class="input-row"><label>Striking Accuracy %</label><input id="ca-sacc" type="number" value="48" min="0" max="100" /></div>
+        <div class="input-row"><label>Striking Defense %</label><input id="ca-sdef" type="number" value="55" min="0" max="100" /></div>
+        <div class="input-row"><label>Takedown Acc %</label><input id="ca-tdacc" type="number" value="40" min="0" max="100" /></div>
+        <div class="input-row"><label>Takedown Def %</label><input id="ca-tddef" type="number" value="60" min="0" max="100" /></div>
+        <div class="input-row"><label>KO/TKO wins</label><input id="ca-ko" type="number" value="8" min="0" /></div>
+        <div class="input-row"><label>Submission wins</label><input id="ca-sub" type="number" value="4" min="0" /></div>
+        <div class="input-row"><label>Decision wins</label><input id="ca-dec" type="number" value="8" min="0" /></div>
+        <div class="input-row"><label>Recent form (e.g. W W L W W)</label><input id="ca-form" value="W W L W W" /></div>
+        <div class="input-row"><label>Fighting style</label><input id="ca-style" value="Striking / BJJ" /></div>
+      </div>
+      <div class="custom-card">
+        <h4 style="color:var(--red)">🔴 Fighter B — Red Corner</h4>
+        <div class="input-row"><label>Name</label><input id="cb-name" value="Fighter B" /></div>
+        <div class="input-row"><label>Record (W-L)</label><input id="cb-rec" value="18-5" /></div>
+        <div class="input-row"><label>Age</label><input id="cb-age" type="number" value="31" min="18" max="50" /></div>
+        <div class="input-row"><label>Reach (inches)</label><input id="cb-reach" type="number" value="72" /></div>
+        <div class="input-row"><label>Striking Accuracy %</label><input id="cb-sacc" type="number" value="43" min="0" max="100" /></div>
+        <div class="input-row"><label>Striking Defense %</label><input id="cb-sdef" type="number" value="50" min="0" max="100" /></div>
+        <div class="input-row"><label>Takedown Acc %</label><input id="cb-tdacc" type="number" value="35" min="0" max="100" /></div>
+        <div class="input-row"><label>Takedown Def %</label><input id="cb-tddef" type="number" value="55" min="0" max="100" /></div>
+        <div class="input-row"><label>KO/TKO wins</label><input id="cb-ko" type="number" value="10" min="0" /></div>
+        <div class="input-row"><label>Submission wins</label><input id="cb-sub" type="number" value="2" min="0" /></div>
+        <div class="input-row"><label>Decision wins</label><input id="cb-dec" type="number" value="6" min="0" /></div>
+        <div class="input-row"><label>Recent form (e.g. W W L W W)</label><input id="cb-form" value="W L W W L" /></div>
+        <div class="input-row"><label>Fighting style</label><input id="cb-style" value="Wrestling / Striking" /></div>
+      </div>
+    </div>
+    <button class="compare-btn" onclick="runCustom()">COMPARE FIGHTERS →</button>
+    <div id="customResult"></div>
+  </div>
+</main>
+
+<footer class="footer">
+  Stats sourced from ESPN · UFC.com · MMA Mania · Sherdog · UFC Fight Night 271 · Seattle
+</footer>
+
+<script>
+const FIGHTS = [
+  {label:"Middleweight · Main Event · 5 rounds",
+   odds:{aLine:"-130",bLine:"+110",aImplied:"57%",bImplied:"48%",note:"DraftKings · Adesanya decision +165 · Pyfer KO +275",props:["Adesanya dec +165","Pyfer KO/TKO +275","Over 3.5 rds -125"]},
+   a:{name:"Israel Adesanya",nick:"The Last Stylebender",country:"NGA/NZ",rec:"24-5-0",rank:"#4 MW",age:36,height:"6'4\"",reach:80,stance:"Switch",style:"Kickboxing / Counter",slpm:4.02,sacc:51.6,sdef:56,tdavg:0.05,tdacc:11.1,tddef:50,subavg:0.14,ko:10,sub:0,dec:14,form:"L W L L L",streak:"3-fight losing streak",
+     talent:{tier:"elite",striking:5,grappling:3,cardio:4,chin:3,wrestling:2,overall:4},
+     wins:[
+       {name:"Alex Pereira",detail:"KO Rd 2 — UFC 287 (2023)",hof:false,champ:true},
+       {name:"Robert Whittaker",detail:"KO Rd 2 — UFC 243 (2019)",hof:false,champ:true},
+       {name:"Anderson Silva",detail:"Decision — UFC 234 (2019)",hof:true,champ:false},
+       {name:"Kelvin Gastelum",detail:"Decision — UFC 236 (2019)",hof:false,champ:false},
+       {name:"Derek Brunson",detail:"TKO Rd 1 — UFC 230 (2018)",hof:false,champ:false}
+     ]},
+   b:{name:"Joe Pyfer",nick:"Bodybagz",country:"USA",rec:"15-3-0",rank:"#14 MW",age:29,height:"6'2\"",reach:75,stance:"Orthodox",style:"Wrestling / Pressure",slpm:3.47,sacc:44.5,sdef:53,tdavg:1.23,tdacc:33.3,tddef:50,subavg:1.02,ko:9,sub:4,dec:2,form:"W W W L W",streak:"3-fight win streak",
+     talent:{tier:"contender",striking:4,grappling:4,cardio:3,chin:4,wrestling:4,overall:3},
+     wins:[
+       {name:"Kelvin Gastelum",detail:"Decision — UFC 316 (2025)",hof:false,champ:false},
+       {name:"Abus Magomedov",detail:"Submission Rd 2 — UFC 320 (2025)",hof:false,champ:false},
+       {name:"Gerald Meerschaert",detail:"TKO Rd 1 — UFC 287 (2023)",hof:false,champ:false},
+       {name:"Abdul Razak Alhassan",detail:"Sub Rd 2 — UFC FN (2023)",hof:false,champ:false},
+       {name:"Marc-André Barriault",detail:"KO Rd 1 — UFC 303 (2024)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Pyfer KO/TKO",method:"ko",reason:"Pyfer's 87% finish rate, 3-fight win streak, and pressure style exploits Adesanya's recent durability issues. Likely Rd 2-3 overhand right or body-work stoppage. Adesanya's reach and counter-striking keep it competitive."}},
+
+  {label:"Women's Flyweight · Co-Main",
+   odds:{aLine:"+145",bLine:"-175",aImplied:"41%",bImplied:"64%",note:"DraftKings · Barber dec +115 · fight distance -350",props:["Barber dec +115","Goes distance -350","Grasso sub +450"]},
+   a:{name:"Alexa Grasso",nick:"",country:"MEX",rec:"16-5-1",rank:"#3 FW",age:32,height:"5'5\"",reach:66,stance:"Orthodox",style:"Muay Thai / Submission",slpm:4.11,sacc:41,sdef:58,tdavg:0.41,tdacc:35,tddef:54,subavg:0.7,ko:4,sub:2,dec:10,form:"L L L W W",streak:"3-loss streak",
+     talent:{tier:"elite",striking:4,grappling:5,cardio:4,chin:4,wrestling:3,overall:4},
+     wins:[
+       {name:"Valentina Shevchenko",detail:"Sub Rd 4 — UFC 285 (2023)",hof:false,champ:true},
+       {name:"Maycee Barber",detail:"Decision — UFC 258 (2021)",hof:false,champ:false},
+       {name:"Viviane Araújo",detail:"Decision — UFC 285 (2022)",hof:false,champ:false},
+       {name:"Joanne Wood",detail:"Decision — UFC 258 (2021)",hof:false,champ:false}
+     ]},
+   b:{name:"Maycee Barber",nick:"The Future",country:"USA",rec:"15-2-0",rank:"#5 FW",age:27,height:"5'5\"",reach:65,stance:"Switch",style:"Wrestling / Striking",slpm:4.61,sacc:53,sdef:54,tdavg:1.58,tdacc:45,tddef:51,subavg:0.5,ko:6,sub:2,dec:7,form:"W W W W L",streak:"4-fight win streak",
+     talent:{tier:"contender",striking:4,grappling:3,cardio:4,chin:4,wrestling:4,overall:4},
+     wins:[
+       {name:"Karine Silva",detail:"Decision — UFC 323 (2025)",hof:false,champ:false},
+       {name:"Kelvin Gastelum",detail:"N/A",hof:false,champ:false},
+       {name:"Katlyn Cerminara",detail:"Decision — UFC 299 (2024)",hof:false,champ:false},
+       {name:"Amanda Ribas",detail:"Submission — UFC (2022)",hof:false,champ:false},
+       {name:"Andrea Lee",detail:"Decision — UFC FN (2022)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Barber Decision",method:"dec",reason:"Barber's volume (4.61 sig strikes/min, 53% accuracy), 4-fight win streak, and wrestling edge should outwork Grasso. Grasso's submission threat makes a finish possible but Barber going the distance at pace is the safest model pick."}},
+
+  {label:"Welterweight · Chiesa Retirement Fight",
+   odds:{aLine:"-500",bLine:"+375",aImplied:"83%",bImplied:"21%",note:"DraftKings · Church sub +200 · Price KO +500",props:["Chiesa sub +200","Goes distance +220","Price KO +500"]},
+   a:{name:"Michael Chiesa",nick:"Maverick",country:"USA",rec:"19-7-0",rank:"NR",age:36,height:"6'1\"",reach:76,stance:"Orthodox",style:"Wrestling / BJJ",slpm:2.8,sacc:38,sdef:51,tdavg:1.9,tdacc:44,tddef:62,subavg:1.1,ko:2,sub:10,dec:7,form:"L W L L W",streak:"Mixed",
+     talent:{tier:"veteran",striking:2,grappling:5,cardio:3,chin:3,wrestling:5,overall:3},
+     wins:[
+       {name:"Kevin Holland",detail:"Decision — UFC FN (2021)",hof:false,champ:false},
+       {name:"Neil Magny",detail:"Decision — UFC FN (2021)",hof:false,champ:false},
+       {name:"Rafael dos Anjos",detail:"Decision — UFC FN (2020)",hof:false,champ:false},
+       {name:"Diego Sanchez",detail:"Sub Rd 1 — UFC 239 (2019)",hof:true,champ:false}
+     ]},
+   b:{name:"Niko Price",nick:"The Hybrid",country:"USA",rec:"15-8-1",rank:"NR",age:32,height:"6'1\"",reach:76,stance:"Switch",style:"Muay Thai / Submission",slpm:4.3,sacc:46,sdef:44,tdavg:0.6,tdacc:30,tddef:55,subavg:0.9,ko:8,sub:4,dec:3,form:"L W L W W",streak:"2-win streak",
+     talent:{tier:"veteran",striking:4,grappling:3,cardio:3,chin:4,wrestling:2,overall:3},
+     wins:[
+       {name:"Tim Means",detail:"TKO — UFC FN (2022)",hof:false,champ:false},
+       {name:"Alex Oliveira",detail:"Decision — UFC FN (2020)",hof:false,champ:false},
+       {name:"James Vick",detail:"KO Rd 1 — UFC (2019)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Chiesa Submission",method:"sub",reason:"Late replacement Price stepped in on short notice. Chiesa's elite BJJ (10 career subs), home state crowd, and retirement motivation all point to a grappling-heavy game plan. Expect rear naked choke Rd 2."}},
+
+  {label:"Featherweight",
+   odds:{aLine:"+215",bLine:"-265",aImplied:"32%",bImplied:"73%",note:"DraftKings · Douglas dec -140 · Over 1.5 rds +145",props:["Over 1.5 rds +145","Douglas dec -140","Erosa sub +300"]},
+   a:{name:"Julian Erosa",nick:"Juicy J",country:"USA",rec:"31-13-0",rank:"NR",age:34,height:"5'9\"",reach:72,stance:"Orthodox",style:"Submission / Striking",slpm:3.9,sacc:42,sdef:50,tdavg:1.1,tdacc:36,tddef:58,subavg:1.4,ko:10,sub:15,dec:6,form:"W L W W L",streak:"Mixed",
+     talent:{tier:"veteran",striking:3,grappling:4,cardio:3,chin:3,wrestling:3,overall:3},
+     wins:[
+       {name:"Steven Peterson",detail:"Sub — UFC FN (2023)",hof:false,champ:false},
+       {name:"Cub Swanson",detail:"KO — UFC FN (2022)",hof:false,champ:false},
+       {name:"Manny Bermudez",detail:"Sub — UFC FN (2021)",hof:false,champ:false}
+     ]},
+   b:{name:"Lerryan Douglas",nick:"",country:"BRA",rec:"13-5-0",rank:"NR",age:28,height:"5'8\"",reach:70,stance:"Orthodox",style:"BJJ / Striking",slpm:3.5,sacc:40,sdef:52,tdavg:0.9,tdacc:32,tddef:60,subavg:1.1,ko:4,sub:6,dec:3,form:"W W L W W",streak:"2-win streak",
+     talent:{tier:"prospect",striking:3,grappling:4,cardio:3,chin:4,wrestling:3,overall:3},
+     wins:[
+       {name:"Chris Padilla",detail:"Sub — UFC debut (2025)",hof:false,champ:false},
+       {name:"Pedro Falcão",detail:"KO — Regional (2024)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Erosa Submission",method:"sub",reason:"Erosa's 15 career submission wins and high output edge make him likely to drag Douglas into a late-round scramble. Sub avg of 1.4 is elite at this level. Pick: Rd 2-3 submission win."}},
+
+  {label:"Middleweight",
+   odds:{aLine:"-120",bLine:"+100",aImplied:"55%",bImplied:"50%",note:"DraftKings · Near pick'em · Abdul-Malik slight edge",props:["Goes distance -115","Abdul-Malik dec +150","KO/TKO finish +200"]},
+   a:{name:"Mansur Abdul-Malik",nick:"",country:"USA",rec:"9-0-1",rank:"NR",age:27,height:"6'2\"",reach:77,stance:"Orthodox",style:"Striking / Grappling",slpm:3.2,sacc:48,sdef:60,tdavg:1.4,tdacc:40,tddef:65,subavg:0.8,ko:5,sub:2,dec:2,form:"W W W W D",streak:"Unbeaten",
+     talent:{tier:"prospect",striking:4,grappling:3,cardio:4,chin:4,wrestling:4,overall:4},
+     wins:[
+       {name:"Ange Loosa",detail:"Decision — UFC FN (2024)",hof:false,champ:false},
+       {name:"Rodolfo Bellato",detail:"Decision — UFC FN (2024)",hof:false,champ:false},
+       {name:"Josh Fremd",detail:"KO — Dana White CS (2023)",hof:false,champ:false}
+     ]},
+   b:{name:"Yousri Belgaroui",nick:"",country:"NED",rec:"9-3-0",rank:"NR",age:30,height:"6'1\"",reach:74,stance:"Orthodox",style:"Kickboxing",slpm:3.8,sacc:44,sdef:52,tdavg:0.5,tdacc:28,tddef:55,subavg:0.4,ko:6,sub:1,dec:2,form:"W L W W L",streak:"Mixed",
+     talent:{tier:"veteran",striking:4,grappling:2,cardio:3,chin:3,wrestling:2,overall:3},
+     wins:[
+       {name:"Marc-André Barriault",detail:"Decision — UFC FN (2024)",hof:false,champ:false},
+       {name:"Mounir Lazzez",detail:"Decision — UFC FN (2023)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Abdul-Malik TKO",method:"ko",reason:"Unbeaten prospect with 60% striking defense and 65% TD defense. Belgaroui depends on stand-up where Abdul-Malik is the more complete fighter. Expect TKO finish in Rd 2-3 as the prospect outworks the Dutch kickboxer."}},
+
+  {label:"Lightweight",
+   odds:{aLine:"-170",bLine:"+140",aImplied:"63%",bImplied:"42%",note:"DraftKings · McKinney KO/TKO +165 most likely method",props:["McKinney KO +165","Under 1.5 rds +120","Goes distance +220"]},
+   a:{name:"Terrance McKinney",nick:"T.Wrecks",country:"USA",rec:"17-8-0",rank:"NR",age:29,height:"5'9\"",reach:70,stance:"Orthodox",style:"Wrestling / BJJ",slpm:4.5,sacc:47,sdef:49,tdavg:2.1,tdacc:48,tddef:57,subavg:1.3,ko:7,sub:6,dec:4,form:"W L W W L",streak:"Mixed",
+     talent:{tier:"contender",striking:4,grappling:4,cardio:3,chin:3,wrestling:4,overall:3},
+     wins:[
+       {name:"Erick Gonzalez",detail:"Sub Rd 1 — UFC FN (2024)",hof:false,champ:false},
+       {name:"Drew Dober",detail:"KO Rd 1 — UFC FN (2023)",hof:false,champ:false},
+       {name:"Christos Giagos",detail:"Sub Rd 1 — UFC FN (2021)",hof:false,champ:false}
+     ]},
+   b:{name:"Kyle Nelson",nick:"The Monster",country:"CAN",rec:"17-6-1",rank:"NR",age:33,height:"5'8\"",reach:72,stance:"Orthodox",style:"Boxing / BJJ",slpm:3.6,sacc:43,sdef:53,tdavg:0.8,tdacc:33,tddef:60,subavg:0.7,ko:10,sub:4,dec:3,form:"W W L W L",streak:"Mixed",
+     talent:{tier:"veteran",striking:3,grappling:3,cardio:3,chin:4,wrestling:2,overall:3},
+     wins:[
+       {name:"Nate Landwehr",detail:"KO Rd 1 — UFC FN (2023)",hof:false,champ:false},
+       {name:"Darren Elkins",detail:"Decision — UFC FN (2022)",hof:false,champ:false}
+     ]},
+   wm:{pick:"McKinney Submission",method:"sub",reason:"McKinney's 48% TD accuracy vs Nelson's 60% TD defense is a key clash. McKinney trained under Chiesa and his 1.3 sub avg is decisive in what becomes a chaos fight early. Pick: submission Rd 1-2."}},
+
+  {label:"Featured Prelim · Lightweight",
+   odds:{aLine:"-300",bLine:"+240",aImplied:"75%",bImplied:"29%",note:"DraftKings · Bahamondes big favorite · 3-wk notice",props:["Bahamondes KO/TKO -125","Under 2.5 rds -145","Musayev upset +240"]},
+   a:{name:"Ignacio Bahamondes",nick:"La Jaula",country:"CHI",rec:"17-6-0",rank:"NR",age:28,height:"5'11\"",reach:74,stance:"Southpaw",style:"Muay Thai / Kicking",slpm:4.1,sacc:46,sdef:54,tdavg:0.8,tdacc:38,tddef:58,subavg:0.5,ko:8,sub:3,dec:6,form:"L W W W W",streak:"4-win streak",
+     talent:{tier:"contender",striking:4,grappling:3,cardio:3,chin:3,wrestling:3,overall:3},
+     wins:[
+       {name:"Zhu Rong",detail:"Sub — UFC FN (2025)",hof:false,champ:false},
+       {name:"Christos Giagos",detail:"KO — UFC FN (2024)",hof:false,champ:false},
+       {name:"Viacheslav Borshchev",detail:"Decision — UFC FN (2023)",hof:false,champ:false}
+     ]},
+   b:{name:"Tofiq Musayev",nick:"",country:"AZE",rec:"22-6-0",rank:"NR",age:36,height:"5'11\"",reach:72,stance:"Orthodox",style:"Striking / Wrestling",slpm:3.7,sacc:43,sdef:50,tdavg:1.0,tdacc:35,tddef:48,subavg:0.6,ko:10,sub:5,dec:7,form:"W W W W L",streak:"1-loss",
+     talent:{tier:"veteran",striking:4,grappling:3,cardio:3,chin:3,wrestling:3,overall:3},
+     wins:[
+       {name:"Damir Ismagulov",detail:"Decision — Rizin (2022)",hof:false,champ:false},
+       {name:"Marat Mianchev",detail:"KO — Regional (2023)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Bahamondes KO/TKO",method:"ko",reason:"Bahamondes opened -300. Southpaw kicking game and 4-fight win streak. Musayev's rough UFC debut leaves big questions. Bahamondes to finish with a flashy kick or TKO in Rd 1-2."}},
+
+  {label:"Lightweight",
+   odds:{aLine:"-280",bLine:"+225",aImplied:"74%",bImplied:"31%",note:"DraftKings · Hooper heavy fav vs UFC newcomer Gibson",props:["Hooper sub +150","Under 2.5 rds -120","Gibson upset +225"]},
+   a:{name:"Chase Hooper",nick:"The Dream",country:"USA",rec:"16-5-1",rank:"NR",age:26,height:"5'11\"",reach:76,stance:"Orthodox",style:"BJJ / Grappling",slpm:2.9,sacc:41,sdef:53,tdavg:2.4,tdacc:50,tddef:60,subavg:1.5,ko:3,sub:8,dec:5,form:"W W L W W",streak:"2-win streak",
+     talent:{tier:"contender",striking:2,grappling:5,cardio:4,chin:4,wrestling:5,overall:4},
+     wins:[
+       {name:"Jim Miller",detail:"Decision — UFC 314 (2025)",hof:true,champ:false},
+       {name:"Danny Chavez",detail:"Decision — UFC FN (2024)",hof:false,champ:false},
+       {name:"Jordan Leavitt",detail:"Sub Rd 2 — UFC FN (2023)",hof:false,champ:false}
+     ]},
+   b:{name:"Lance Gibson Jr.",nick:"",country:"CAN",rec:"9-2-0",rank:"NR",age:29,height:"5'9\"",reach:71,stance:"Orthodox",style:"Wrestling / Striking",slpm:3.2,sacc:44,sdef:51,tdavg:1.8,tdacc:42,tddef:52,subavg:0.5,ko:3,sub:3,dec:3,form:"W W W W L",streak:"1-loss",
+     talent:{tier:"prospect",striking:3,grappling:3,cardio:3,chin:3,wrestling:4,overall:3},
+     wins:[
+       {name:"Vinicius Salvador",detail:"Decision — Bellator (2024)",hof:false,champ:false},
+       {name:"Killys Mota",detail:"Sub — Bellator (2023)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Hooper Submission",method:"sub",reason:"Hooper -280 favorite. 50% TD accuracy and 1.5 sub avg are elite. Gibson is a good wrestler but Hooper's BJJ is on another level. Models favor Rd 2 submission as Hooper grinds the fight to the mat."}},
+
+  {label:"Heavyweight",
+   odds:{aLine:"+115",bLine:"-140",aImplied:"47%",bImplied:"58%",note:"DraftKings · Near pick'em · Fortune slight fav",props:["Fortune TKO -110","Under 1.5 rds +105","Tybura dec +280"]},
+   a:{name:"Marcin Tybura",nick:"Tybur",country:"POL",rec:"24-9-0",rank:"NR",age:39,height:"6'4\"",reach:80,stance:"Orthodox",style:"Muay Thai / Wrestling",slpm:3.3,sacc:45,sdef:54,tdavg:1.2,tdacc:38,tddef:63,subavg:0.4,ko:8,sub:5,dec:11,form:"W L W L W",streak:"Mixed",
+     talent:{tier:"gatekeeper",striking:4,grappling:3,cardio:3,chin:3,wrestling:3,overall:3},
+     wins:[
+       {name:"Andrei Arlovski",detail:"Decision — UFC FN (2023)",hof:true,champ:false},
+       {name:"Walt Harris",detail:"TKO — UFC FN (2022)",hof:false,champ:false},
+       {name:"Greg Hardy",detail:"Decision — UFC FN (2021)",hof:false,champ:false}
+     ]},
+   b:{name:"Tyrell Fortune",nick:"",country:"USA",rec:"12-2-0",rank:"NR",age:30,height:"6'3\"",reach:78,stance:"Orthodox",style:"Wrestling / Power",slpm:2.8,sacc:46,sdef:52,tdavg:2.2,tdacc:52,tddef:55,subavg:0.3,ko:7,sub:1,dec:4,form:"W W W W L",streak:"1-loss",
+     talent:{tier:"prospect",striking:3,grappling:3,cardio:3,chin:4,wrestling:5,overall:3},
+     wins:[
+       {name:"Parker Porter",detail:"TKO Rd 1 — UFC FN (2024)",hof:false,champ:false},
+       {name:"Don'Tale Mayes",detail:"TKO Rd 1 — UFC FN (2023)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Fortune TKO",method:"ko",reason:"Fortune's 52% TD accuracy and power striking give younger legs the edge vs 39-year-old Tybura. Fortune had 6 straight fights end in Rd 1 at one point. Expect an early power finish — TKO Rd 1 or 2."}},
+
+  {label:"Women's Flyweight",
+   odds:{aLine:"-130",bLine:"+110",aImplied:"57%",bImplied:"48%",note:"DraftKings · Slight edge O'Neill · near coin flip",props:["Goes distance -180","O'Neill dec +125","Fernandes sub +450"]},
+   a:{name:"Casey O'Neill",nick:"King KC",country:"SCO/AUS",rec:"10-2-0",rank:"NR",age:27,height:"5'4\"",reach:64,stance:"Orthodox",style:"Muay Thai / Wrestling",slpm:3.8,sacc:47,sdef:55,tdavg:1.6,tdacc:45,tddef:58,subavg:0.8,ko:4,sub:3,dec:3,form:"L L W W W",streak:"3-win streak",
+     talent:{tier:"contender",striking:4,grappling:3,cardio:3,chin:3,wrestling:4,overall:3},
+     wins:[
+       {name:"Antonina Shevchenko",detail:"TKO — UFC FN (2023)",hof:false,champ:false},
+       {name:"Liang Na",detail:"TKO — UFC FN (2022)",hof:false,champ:false}
+     ]},
+   b:{name:"Gabriella Fernandes",nick:"",country:"BRA",rec:"10-4-0",rank:"NR",age:30,height:"5'3\"",reach:63,stance:"Orthodox",style:"BJJ / Striking",slpm:3.4,sacc:43,sdef:52,tdavg:1.1,tdacc:38,tddef:53,subavg:1.0,ko:2,sub:4,dec:4,form:"W W W L W",streak:"1-loss",
+     talent:{tier:"veteran",striking:3,grappling:4,cardio:3,chin:3,wrestling:3,overall:3},
+     wins:[
+       {name:"Wang Cong",detail:"Decision — UFC FN (2024)",hof:false,champ:false},
+       {name:"Carli Judice",detail:"Sub — UFC FN (2025)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Fernandes Decision",method:"dec",reason:"Sherdog analysis favors Fernandes. O'Neill has regressed against fighters with clear game plans; Fernandes handled 3 different style opponents cleanly. Technical win over 3 rounds."}},
+
+  {label:"Light Heavyweight",
+   odds:{aLine:"-600",bLine:"+440",aImplied:"86%",bImplied:"19%",note:"DraftKings · Stirling massive fav · 8-fight win streak",props:["Stirling dec -160","Goes distance -110","Lopes upset +440"]},
+   a:{name:"Navajo Stirling",nick:"",country:"NZ",rec:"11-2-0",rank:"NR",age:29,height:"6'2\"",reach:75,stance:"Orthodox",style:"City Kickboxing / Grappling",slpm:3.0,sacc:44,sdef:58,tdavg:1.3,tdacc:40,tddef:62,subavg:0.6,ko:4,sub:2,dec:5,form:"W W W W W",streak:"8-fight win streak",
+     talent:{tier:"contender",striking:3,grappling:4,cardio:4,chin:4,wrestling:4,overall:3},
+     wins:[
+       {name:"Junior Tafa",detail:"Decision — UFC FN (2024)",hof:false,champ:false},
+       {name:"Tafon Nchukwi",detail:"Decision — UFC FN (2025)",hof:false,champ:false}
+     ]},
+   b:{name:"Bruno Lopes",nick:"",country:"BRA",rec:"14-4-0",rank:"NR",age:32,height:"6'1\"",reach:74,stance:"Orthodox",style:"Muay Thai / BJJ",slpm:3.9,sacc:48,sdef:49,tdavg:0.8,tdacc:33,tddef:50,subavg:0.8,ko:7,sub:4,dec:3,form:"L L W W W",streak:"3-win streak",
+     talent:{tier:"veteran",striking:4,grappling:3,cardio:3,chin:3,wrestling:2,overall:3},
+     wins:[
+       {name:"Kennedy Nzechukwu",detail:"KO — UFC FN (2024)",hof:false,champ:false},
+       {name:"Devin Clark",detail:"Sub — UFC FN (2023)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Stirling Decision",method:"dec",reason:"Stirling given 87.1% win probability. 8-fight win streak including 3 UFC wins all by decision. City Kickboxing discipline and patience wins a controlled 3-round decision."}},
+
+  {label:"Bantamweight",
+   odds:{aLine:"-160",bLine:"+135",aImplied:"62%",bImplied:"43%",note:"DraftKings · Simon fav · Yanez TD def 81% key factor",props:["Over 2.5 rds -175","Simon sub +220","Yanez KO +280"]},
+   a:{name:"Ricky Simon",nick:"",country:"USA",rec:"22-5-0",rank:"NR",age:32,height:"5'6\"",reach:68,stance:"Orthodox",style:"Wrestling / BJJ",slpm:3.5,sacc:44,sdef:52,tdavg:2.5,tdacc:52,tddef:65,subavg:1.0,ko:5,sub:8,dec:9,form:"W L W W L",streak:"Mixed",
+     talent:{tier:"contender",striking:2,grappling:5,cardio:4,chin:4,wrestling:5,overall:4},
+     wins:[
+       {name:"Javid Basharat",detail:"KO — UFC FN (2025)",hof:false,champ:false},
+       {name:"Jack Shore",detail:"Decision — UFC FN (2023)",hof:false,champ:false},
+       {name:"Urijah Faber",detail:"Sub — UFC 245 (2019)",hof:true,champ:false}
+     ]},
+   b:{name:"Adrian Yanez",nick:"",country:"USA",rec:"16-5-0",rank:"NR",age:30,height:"5'8\"",reach:70,stance:"Orthodox",style:"Boxing / Striking",slpm:4.4,sacc:50,sdef:54,tdavg:0.5,tdacc:28,tddef:62,subavg:0.3,ko:10,sub:1,dec:5,form:"L L W L W",streak:"1-3 last 4",
+     talent:{tier:"veteran",striking:4,grappling:2,cardio:3,chin:3,wrestling:2,overall:3},
+     wins:[
+       {name:"Davey Grant",detail:"KO Rd 1 — UFC FN (2022)",hof:false,champ:false},
+       {name:"Victor Rodriguez",detail:"KO Rd 1 — UFC FN (2021)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Simon Submission",method:"sub",reason:"Simon's 52% TD accuracy, elite BJJ, and pressure wrestling should smother Yanez's boxing. Simon tends to go the distance (64.9% Over 2.5 rounds). Pick: submission Rd 2-3 as Simon grinds down the striker."}},
+
+  {label:"Women's Strawweight",
+   odds:{aLine:"-650",bLine:"+470",aImplied:"87%",bImplied:"18%",note:"DraftKings · Thainara massive fav · 13-1 record",props:["Thainara sub -115","Under 2.5 rds -150","Brasil upset +470"]},
+   a:{name:"Alexia Thainara",nick:"",country:"BRA",rec:"13-1-0",rank:"NR",age:26,height:"5'4\"",reach:64,stance:"Orthodox",style:"Striking / Grappling",slpm:3.6,sacc:46,sdef:57,tdavg:1.2,tdacc:42,tddef:60,subavg:0.9,ko:4,sub:4,dec:5,form:"W W W W W",streak:"5-fight win streak",
+     talent:{tier:"prospect",striking:4,grappling:4,cardio:4,chin:4,wrestling:4,overall:4},
+     wins:[
+       {name:"Luana Santos",detail:"Decision — UFC FN (2025)",hof:false,champ:false},
+       {name:"Luana Pinheiro",detail:"Decision — UFC FN (2024)",hof:false,champ:false}
+     ]},
+   b:{name:"Bruna Brasil",nick:"",country:"BRA",rec:"11-6-1",rank:"NR",age:33,height:"5'5\"",reach:65,stance:"Orthodox",style:"BJJ / Grappling",slpm:2.7,sacc:38,sdef:50,tdavg:1.5,tdacc:44,tddef:52,subavg:1.1,ko:1,sub:5,dec:5,form:"W L L L W",streak:"Mixed",
+     talent:{tier:"gatekeeper",striking:2,grappling:4,cardio:3,chin:3,wrestling:3,overall:3},
+     wins:[
+       {name:"JJ Aldrich",detail:"Decision — UFC FN (2023)",hof:false,champ:false},
+       {name:"Poliana Botelho",detail:"Decision — UFC FN (2021)",hof:false,champ:false}
+     ]},
+   wm:{pick:"Thainara Submission",method:"sub",reason:"Sherdog: Thainara by Rd 2 submission. Bigger, stronger, and more complete. Brasil's reactive takedowns face a much improved opponent. Thainara's BJJ + physicality = second-round finish."}}
+];
+
+function calcProb(a, b) {
+  let sA = 0, sB = 0;
+  sA += a.sacc * .20; sB += b.sacc * .20;
+  sA += a.sdef * .12; sB += b.sdef * .12;
+  sA += a.tdacc * .08; sB += b.tdacc * .08;
+  sA += a.tddef * .08; sB += b.tddef * .08;
+  const finA = (a.ko + a.sub) / (a.ko + a.sub + a.dec + 1) * 100;
+  const finB = (b.ko + b.sub) / (b.ko + b.sub + b.dec + 1) * 100;
+  sA += finA * .15; sB += finB * .15;
+  sA += Math.max(0, 35 - a.age) * .4; sB += Math.max(0, 35 - b.age) * .4;
+  sA += a.reach * .05; sB += b.reach * .05;
+  const fm = {W:2, L:-2, D:0};
+  (a.form || '').split(' ').forEach(r => { sA += (fm[r] || 0); });
+  (b.form || '').split(' ').forEach(r => { sB += (fm[r] || 0); });
+  const t = sA + sB;
+  const pA = Math.round((sA / t) * 100);
+  return [pA, 100 - pA];
+}
+
+function bw(va, vb) {
+  const mn = Math.min(va, vb), mx = Math.max(va, vb), rng = mx - mn || 1;
+  return [Math.round(40 + ((va - mn) / rng) * 55), Math.round(40 + ((vb - mn) / rng) * 55)];
+}
+
+function wmClass(m) { return {ko:'wm-ko', sub:'wm-sub', dec:'wm-dec', tko:'wm-tko'}[m] || 'wm-ko'; }
+
+function row(lbl, va, vb, higher = true, isText = false) {
+  const nA = parseFloat(va) || 0, nB = parseFloat(vb) || 0;
+  let clA = '', clB = '';
+  if (!isText) {
+    if (higher) { if (nA > nB) clA = 'adv-l'; else if (nB > nA) clB = 'adv-r'; }
+    else { if (nA < nB) clA = 'adv-l'; else if (nB < nA) clB = 'adv-r'; }
+  }
+  const [bA, bB] = isText ? [60, 60] : bw(nA, nB);
+  return `
+    <div class="stat-row">
+      <div class="sv-l"><span class="${clA}">${va}</span></div>
+      <div class="sl">${lbl}</div>
+      <div class="sv-r"><span class="${clB}">${vb}</span></div>
+    </div>
+    ${isText ? '' : `<div class="bar-row"><div class="bar-track bar-l"><div class="bar-fill" style="width:${bA}%"></div></div><div></div><div class="bar-track bar-r"><div class="bar-fill" style="width:${bB}%"></div></div></div>`}`;
+}
+
+function renderComp(a, b, wm, label, odds) {
+  const prob = calcProb(a, b);
+  const wName = prob[0] >= prob[1] ? a.name.split(' ')[0] : b.name.split(' ')[0];
+  const wCol = prob[0] >= prob[1] ? 'var(--blue)' : 'var(--red)';
+  const finRateA = Math.round((a.ko + a.sub) / (a.ko + a.sub + a.dec) * 100) || 0;
+  const finRateB = Math.round((b.ko + b.sub) / (b.ko + b.sub + b.dec) * 100) || 0;
+
+  function implied(line) {
+    if (!line) return '—';
+    const n = parseInt(line);
+    if (n < 0) return Math.round(Math.abs(n)/(Math.abs(n)+100)*100)+'%';
+    return Math.round(100/(n+100)*100)+'%';
+  }
+
+  function isFav(line) { return line && line.startsWith('-'); }
+
+  function oddsSection() {
+    if (!odds) return '';
+    const aFav = isFav(odds.aLine);
+    const bFav = isFav(odds.bLine);
+    return `
+    <div class="odds-box">
+      <div class="odds-header">
+        <span class="odds-title">DraftKings moneyline</span>
+        <span class="dk-badge">DK SPORTSBOOK</span>
+      </div>
+      <div class="odds-grid">
+        <div class="odds-card">
+          <div class="odds-fighter">${a.name.split(' ')[0]}</div>
+          <div class="odds-line ${aFav ? 'odds-fav' : 'odds-dog'}">${odds.aLine}</div>
+          <div class="odds-implied">Implied: ${implied(odds.aLine)}</div>
+        </div>
+        <div class="odds-card">
+          <div class="odds-fighter">${b.name.split(' ')[0]}</div>
+          <div class="odds-line ${bFav ? 'odds-fav' : 'odds-dog'}">${odds.bLine}</div>
+          <div class="odds-implied">Implied: ${implied(odds.bLine)}</div>
+        </div>
+      </div>
+      <div class="odds-note">${odds.note}</div>
+      ${odds.props ? `<div class="odds-props">${odds.props.map(p=>`<div class="odds-prop">${p}</div>`).join('')}</div>` : ''}
+    </div>`;
+  }
+
+  function stars(n, max=5) {
+    let s='';
+    for(let i=1;i<=max;i++) s+=`<div class="star ${i<=n?'star-on':'star-off'}"></div>`;
+    return `<div class="talent-stars">${s}</div>`;
+  }
+
+  function tierBadge(tier) {
+    const map = {elite:'tier-elite',contender:'tier-contender',prospect:'tier-prospect',veteran:'tier-veteran',gatekeeper:'tier-gatekeeper'};
+    const labels = {elite:'ELITE',contender:'CONTENDER',prospect:'PROSPECT',veteran:'VETERAN',gatekeeper:'GATEKEEPER'};
+    return `<span class="tier-badge ${map[tier]||'tier-veteran'}">${labels[tier]||tier.toUpperCase()}</span>`;
+  }
+
+  function talentSection() {
+    if (!a.talent && !b.talent) return '';
+    const ta = a.talent || {}, tb = b.talent || {};
+    return `
+    <div class="talent-box">
+      <div class="section-title">Talent level</div>
+      <div class="talent-grid">
+        <div class="talent-card">
+          <h5 style="color:var(--blue)">${a.name.split(' ')[0]}</h5>
+          ${tierBadge(ta.tier||'veteran')}
+          <div style="margin-top:8px">
+            <div class="talent-row"><span class="talent-label">Striking</span>${stars(ta.striking||3)}</div>
+            <div class="talent-row"><span class="talent-label">Grappling</span>${stars(ta.grappling||3)}</div>
+            <div class="talent-row"><span class="talent-label">Wrestling</span>${stars(ta.wrestling||3)}</div>
+            <div class="talent-row"><span class="talent-label">Cardio</span>${stars(ta.cardio||3)}</div>
+            <div class="talent-row"><span class="talent-label">Chin</span>${stars(ta.chin||3)}</div>
+            <div class="talent-row"><span class="talent-label">Overall</span>${stars(ta.overall||3)}</div>
+          </div>
+        </div>
+        <div class="talent-card">
+          <h5 style="color:var(--red)">${b.name.split(' ')[0]}</h5>
+          ${tierBadge(tb.tier||'veteran')}
+          <div style="margin-top:8px">
+            <div class="talent-row"><span class="talent-label">Striking</span>${stars(tb.striking||3)}</div>
+            <div class="talent-row"><span class="talent-label">Grappling</span>${stars(tb.grappling||3)}</div>
+            <div class="talent-row"><span class="talent-label">Wrestling</span>${stars(tb.wrestling||3)}</div>
+            <div class="talent-row"><span class="talent-label">Cardio</span>${stars(tb.cardio||3)}</div>
+            <div class="talent-row"><span class="talent-label">Chin</span>${stars(tb.chin||3)}</div>
+            <div class="talent-row"><span class="talent-label">Overall</span>${stars(tb.overall||3)}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function winsSection() {
+    function winsList(fighter, dotClass) {
+      if (!fighter.wins || !fighter.wins.length) return `<div class="no-wins">No notable wins on record</div>`;
+      return fighter.wins.map(w=>`
+        <div class="win-entry">
+          <div class="win-dot ${dotClass}"></div>
+          <div>
+            <div class="win-name">${w.name}${w.hof?'<span class="hof-badge">HOF</span>':''}${w.champ?'<span class="champ-badge">CHAMP</span>':''}</div>
+            <div class="win-detail">${w.detail}</div>
+          </div>
+        </div>`).join('');
+    }
+    return `
+    <div class="wins-box">
+      <div class="section-title">Notable wins</div>
+      <div class="wins-grid">
+        <div class="wins-card">
+          <h5 style="color:var(--blue)">${a.name.split(' ')[0]}</h5>
+          ${winsList(a,'win-dot-blue')}
+        </div>
+        <div class="wins-card">
+          <h5 style="color:var(--red)">${b.name.split(' ')[0]}</h5>
+          ${winsList(b,'win-dot-red')}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `
+    <div class="vs-bar">
+      <div class="f-blue">
+        <div><span class="rank-badge rank-blue">${a.rank || 'NR'}</span></div>
+        <div class="f-name">${a.name}</div>
+        ${a.nick ? `<div class="f-nick">"${a.nick}"</div>` : ''}
+        <div class="f-rec" style="color:var(--blue)">${a.rec || ''}</div>
+        <div class="f-form">${a.form || ''}</div>
+      </div>
+      <div class="vs-center">
+        <div class="weight-class">${label || ''}</div>
+        <div class="vs-pill">VS</div>
+      </div>
+      <div class="f-red">
+        <div><span class="rank-badge rank-red">${b.rank || 'NR'}</span></div>
+        <div class="f-name">${b.name}</div>
+        ${b.nick ? `<div class="f-nick">"${b.nick}"</div>` : ''}
+        <div class="f-rec" style="color:var(--red)">${b.rec || ''}</div>
+        <div class="f-form">${b.form || ''}</div>
+      </div>
+    </div>
+
+    <div class="wm-box">
+      <div class="wm-header">
+        <span class="wm-label">Predicted win method</span>
+        <span class="wm-pick ${wmClass(wm.method)}">${wm.pick}</span>
+      </div>
+      <p class="wm-reason">${wm.reason}</p>
+    </div>
+
+    ${oddsSection()}
+    ${talentSection()}
+    ${winsSection()}
+
+    <div class="section">
+      <div class="section-title">Physical attributes</div>
+      ${row('Age', a.age, b.age, false)}
+      ${row('Height', a.height || '', b.height || '', true, true)}
+      ${row('Reach', a.reach + '"', b.reach + '"')}
+      ${row('Stance', a.stance || '', b.stance || '', true, true)}
+      ${row('Style', a.style || '', b.style || '', true, true)}
+    </div>
+
+    <div class="section">
+      <div class="section-title">Striking</div>
+      ${row('Sig. strikes / min', a.slpm.toFixed(2), b.slpm.toFixed(2))}
+      ${row('Striking accuracy', a.sacc + '%', b.sacc + '%')}
+      ${row('Striking defense', a.sdef + '%', b.sdef + '%')}
+    </div>
+
+    <div class="section">
+      <div class="section-title">Grappling & takedowns</div>
+      ${row('Takedowns / 15 min', a.tdavg.toFixed(2), b.tdavg.toFixed(2))}
+      ${row('Takedown accuracy', a.tdacc + '%', b.tdacc + '%')}
+      ${row('Takedown defense', a.tddef + '%', b.tddef + '%')}
+      ${row('Submission avg', a.subavg.toFixed(2), b.subavg.toFixed(2))}
+    </div>
+
+    <div class="section">
+      <div class="section-title">Win methods (career)</div>
+      <div class="finish-grid">
+        <div class="finish-card">
+          <h4 style="color:var(--blue)">${a.name.split(' ')[0]}</h4>
+          <div class="finish-row"><span class="finish-type">KO / TKO</span><span class="finish-val">${a.ko}</span></div>
+          <div class="finish-row"><span class="finish-type">Submission</span><span class="finish-val">${a.sub}</span></div>
+          <div class="finish-row"><span class="finish-type">Decision</span><span class="finish-val">${a.dec}</span></div>
+          <div class="finish-rate-row">
+            <span class="finish-type" style="font-size:10px">Finish rate</span>
+            <span class="finish-val" style="color:var(--blue)">${finRateA}%</span>
+          </div>
+        </div>
+        <div class="finish-card">
+          <h4 style="color:var(--red)">${b.name.split(' ')[0]}</h4>
+          <div class="finish-row"><span class="finish-type">KO / TKO</span><span class="finish-val">${b.ko}</span></div>
+          <div class="finish-row"><span class="finish-type">Submission</span><span class="finish-val">${b.sub}</span></div>
+          <div class="finish-row"><span class="finish-type">Decision</span><span class="finish-val">${b.dec}</span></div>
+          <div class="finish-rate-row">
+            <span class="finish-type" style="font-size:10px">Finish rate</span>
+            <span class="finish-val" style="color:var(--red)">${finRateB}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Win probability</div>
+      <div class="prob-cards">
+        <div class="prob-card">
+          <div class="prob-pct prob-pct-blue">${prob[0]}%</div>
+          <div class="prob-name">${a.name.split(' ')[0]}</div>
+        </div>
+        <div class="prob-card">
+          <div class="prob-pct prob-pct-red">${prob[1]}%</div>
+          <div class="prob-name">${b.name.split(' ')[0]}</div>
+        </div>
+      </div>
+      <div class="prob-bar-track">
+        <div class="pb-blue" style="width:${prob[0]}%"></div>
+        <div class="pb-red" style="width:${prob[1]}%"></div>
+      </div>
+      <div class="prob-labels">
+        <span>${a.name.split(' ')[0]} ${prob[0]}%</span>
+        <span>${b.name.split(' ')[0]} ${prob[1]}%</span>
+      </div>
+    </div>
+
+    <div class="analysis-box" id="analysisBox">
+      <div class="analysis-edge">Model edge: <span style="color:${wCol}">${wName} (${Math.max(prob[0], prob[1])}%)</span></div>
+      <p class="analysis-p">${a.name.split(' ')[0]}: ${a.streak || ''} · ${a.style}</p>
+      <p class="analysis-p">${b.name.split(' ')[0]}: ${b.streak || ''} · ${b.style}</p>
+      <button class="deep-btn" id="deepBtn" onclick="runDeepAnalysis(this, '${a.name.replace(/'/g,"\\'")}', '${b.name.replace(/'/g,"\\'")}', '${(a.rec||'').replace(/'/g,"\\'")}', '${(b.rec||'').replace(/'/g,"\\'")}', '${(a.style||'').replace(/'/g,"\\'")}', '${(b.style||'').replace(/'/g,"\\'")}', ${a.sacc}, ${b.sacc}, ${a.sdef}, ${b.sdef}, ${a.tdacc}, ${b.tdacc}, ${a.ko}, ${b.ko}, ${a.sub}, ${b.sub}, ${prob[0]}, ${prob[1]}, '${(wm.pick||'').replace(/'/g,"\\'")}')">
+        <span class="btn-icon">⚡</span> Deep AI Analysis
+      </button>
+      <div id="aiPanel"></div>
+    </div>`;
+}
+
+function selectFight(idx) {
+  const f = FIGHTS[parseInt(idx)];
+  document.getElementById('fightDisplay').innerHTML = renderComp(f.a, f.b, f.wm, f.label, f.odds);
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('cardTab').style.display = tab === 'card' ? 'block' : 'none';
+  document.getElementById('customTab').style.display = tab === 'custom' ? 'block' : 'none';
+}
+
+function g(id) { return document.getElementById(id).value; }
+
+function runCustom() {
+  const a = {
+    name: g('ca-name') || 'Fighter A', rec: g('ca-rec'), rank: 'Custom',
+    age: parseInt(g('ca-age')) || 28, height: '', reach: parseInt(g('ca-reach')) || 74,
+    stance: '', style: g('ca-style') || '',
+    slpm: 3.5, sacc: parseFloat(g('ca-sacc')) || 48, sdef: parseFloat(g('ca-sdef')) || 55,
+    tdavg: 1.0, tdacc: parseFloat(g('ca-tdacc')) || 40, tddef: parseFloat(g('ca-tddef')) || 60, subavg: 0.8,
+    ko: parseInt(g('ca-ko')) || 0, sub: parseInt(g('ca-sub')) || 0, dec: parseInt(g('ca-dec')) || 0,
+    form: g('ca-form') || 'W W W', streak: ''
+  };
+  const b = {
+    name: g('cb-name') || 'Fighter B', rec: g('cb-rec'), rank: 'Custom',
+    age: parseInt(g('cb-age')) || 31, height: '', reach: parseInt(g('cb-reach')) || 72,
+    stance: '', style: g('cb-style') || '',
+    slpm: 3.5, sacc: parseFloat(g('cb-sacc')) || 43, sdef: parseFloat(g('cb-sdef')) || 50,
+    tdavg: 1.0, tdacc: parseFloat(g('cb-tdacc')) || 35, tddef: parseFloat(g('cb-tddef')) || 55, subavg: 0.7,
+    ko: parseInt(g('cb-ko')) || 0, sub: parseInt(g('cb-sub')) || 0, dec: parseInt(g('cb-dec')) || 0,
+    form: g('cb-form') || 'W W W', streak: ''
+  };
+  const prob = calcProb(a, b);
+  const fa = a.ko + a.sub, fb = b.ko + b.sub;
+  let method = 'dec', pick = 'Decision';
+  const winner = prob[0] >= prob[1] ? a : b;
+  const loser = prob[0] >= prob[1] ? b : a;
+  const wf = prob[0] >= prob[1] ? fa : fb;
+  const wko = prob[0] >= prob[1] ? a.ko : b.ko;
+  const wsub = prob[0] >= prob[1] ? a.sub : b.sub;
+  if (wf > 0) {
+    if (wko >= wsub) { method = 'ko'; pick = winner.name.split(' ')[0] + ' KO/TKO'; }
+    else { method = 'sub'; pick = winner.name.split(' ')[0] + ' Submission'; }
+  } else { pick = winner.name.split(' ')[0] + ' Decision'; }
+  const wm = {
+    pick, method,
+    reason: `Based on your inputs — ${a.name} finish rate: ${Math.round(fa / (fa + a.dec + 1) * 100)}% · ${b.name} finish rate: ${Math.round(fb / (fb + b.dec + 1) * 100)}%. Model probability: ${a.name.split(' ')[0]} ${prob[0]}% vs ${b.name.split(' ')[0]} ${prob[1]}%.`
+  };
+  document.getElementById('customResult').innerHTML = renderComp(a, b, wm, 'Custom matchup', null);
+}
+
+selectFight(0);
+
+async function runDeepAnalysis(btn, aName, bName, aRec, bRec, aStyle, bStyle, aSacc, bSacc, aSdef, bSdef, aTdacc, bTdacc, aKo, bKo, aSub, bSub, probA, probB, pick) {
+  const panel = document.getElementById('aiPanel');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-icon">⚡</span> Analyzing...';
+
+  panel.innerHTML = `
+    <div class="ai-panel">
+      <div class="ai-panel-header">
+        <span class="ai-label">AI Deep Analysis</span>
+        <span class="ai-model-badge">Claude Sonnet</span>
+      </div>
+      <div class="ai-thinking">
+        Generating breakdown
+        <div class="ai-thinking-dots"><span></span><span></span><span></span></div>
+      </div>
+    </div>`;
+
+  const prompt = `You are an expert MMA analyst. Give a deep fight breakdown for: ${aName} (${aRec}, ${aStyle}, str acc ${aSacc}%, str def ${aSdef}%, TD acc ${aTdacc}%, KO wins ${aKo}, Sub wins ${aSub}) vs ${bName} (${bRec}, ${bStyle}, str acc ${bSacc}%, str def ${bSdef}%, TD acc ${bTdacc}%, KO wins ${bKo}, Sub wins ${bSub}). Win probability: ${aName.split(' ')[0]} ${probA}% — ${bName.split(' ')[0]} ${probB}%. Predicted method: ${pick}.
+
+Write a sharp, punchy breakdown covering:
+1. The 3 key X-factors that will decide this fight
+2. Each fighter's path to victory (2-3 sentences each)
+3. Round-by-round prediction (label each round clearly)
+4. Final verdict with confidence level
+
+Be direct and specific. Use the stats to back your points. Keep it under 400 words total.`;
+
+  try {
+    const response = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error ${response.status}`);
+    }
+
+    panel.innerHTML = `
+      <div class="ai-panel">
+        <div class="ai-panel-header">
+          <span class="ai-label">AI Deep Analysis</span>
+          <span class="ai-model-badge">Claude Sonnet</span>
+        </div>
+        <div class="ai-content" id="aiContent"></div>
+      </div>`;
+
+    const contentEl = document.getElementById('aiContent');
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const evt = JSON.parse(data);
+          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+            fullText += evt.delta.text;
+            contentEl.innerHTML = formatAIText(fullText) + '<span style="opacity:.5">▋</span>';
+          }
+        } catch {}
+      }
+    }
+    contentEl.innerHTML = formatAIText(fullText);
+    btn.innerHTML = '<span class="btn-icon">⚡</span> Regenerate Analysis';
+    btn.disabled = false;
+
+  } catch (err) {
+    panel.innerHTML = `
+      <div class="ai-panel">
+        <div class="ai-error">
+          Unable to load AI analysis. Make sure you are running this app through Vercel with a valid Anthropic API key configured, or open it via the Claude.ai artifacts panel.<br><br>
+          <strong>To enable:</strong> Add your Anthropic API key as an environment variable <code>ANTHROPIC_API_KEY</code> in your Vercel project settings, then redeploy.
+        </div>
+      </div>`;
+    btn.innerHTML = '<span class="btn-icon">⚡</span> Deep AI Analysis';
+    btn.disabled = false;
+  }
+}
+
+function formatAIText(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^### (.+)$/gm, '<strong style="color:var(--text);font-size:13px;display:block;margin-top:10px;margin-bottom:4px">$1</strong>')
+    .replace(/^## (.+)$/gm, '<strong style="color:var(--text);font-size:14px;display:block;margin-top:12px;margin-bottom:5px">$1</strong>')
+    .replace(/^# (.+)$/gm, '<strong style="color:var(--text);font-size:15px;display:block;margin-top:12px;margin-bottom:6px">$1</strong>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+}
+</script>
+</body>
+</html>
