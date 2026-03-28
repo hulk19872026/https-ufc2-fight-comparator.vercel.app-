@@ -656,6 +656,101 @@
     .compare-btn:hover { background: var(--blue-dim); }
     #customResult { margin-top: 1.25rem; }
 
+    /* ROSTER TAB */
+    .roster-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .roster-search-wrap { flex: 1; min-width: 160px; position: relative; }
+    .roster-search-wrap input {
+      width: 100%;
+      padding: 9px 12px 9px 32px;
+      font-size: 13px;
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      font-family: 'Barlow', sans-serif;
+    }
+    .roster-search-wrap input:focus { outline: none; border-color: var(--blue); }
+    .roster-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 13px; pointer-events: none; }
+    .division-filter {
+      padding: 9px 12px;
+      font-size: 12px;
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      font-family: 'Barlow', sans-serif;
+      cursor: pointer;
+      min-width: 130px;
+    }
+    .division-filter:focus { outline: none; border-color: var(--blue); }
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 8px;
+      margin-bottom: 1rem;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .roster-grid::-webkit-scrollbar { width: 4px; }
+    .roster-grid::-webkit-scrollbar-track { background: transparent; }
+    .roster-grid::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    .fighter-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 11px;
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+    }
+    .fighter-card:hover { border-color: var(--border2); background: var(--bg4); }
+    .fighter-card.selected-blue { border-color: var(--blue); background: var(--blue-bg); }
+    .fighter-card.selected-red { border-color: var(--red); background: var(--red-bg); }
+    .fc-name { font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.3; margin-bottom: 3px; }
+    .fc-rec { font-size: 10px; color: var(--text3); margin-bottom: 2px; }
+    .fc-div { font-size: 9px; color: var(--text3); letter-spacing: .04em; }
+    .fc-champ { font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px; background: rgba(245,158,11,.2); color: var(--gold); border: 1px solid rgba(245,158,11,.3); margin-left: 3px; }
+    .fc-hof { font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px; background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(59,130,246,.25); margin-left: 3px; }
+    .roster-selected-bar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 1rem;
+    }
+    .sel-fighter { font-size: 13px; font-weight: 500; }
+    .sel-empty { font-size: 12px; color: var(--text3); font-style: italic; }
+    .roster-compare-btn {
+      width: 100%;
+      padding: 11px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: .06em;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s;
+      margin-bottom: 1rem;
+    }
+    .roster-compare-btn:hover { background: var(--blue-dim); }
+    .roster-compare-btn:disabled { opacity: .4; cursor: not-allowed; }
+    #rosterResult { margin-top: .5rem; }
+    .roster-hint { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+    .no-results { font-size: 13px; color: var(--text3); text-align: center; padding: 2rem; font-style: italic; }
+
     /* FOOTER */
     .footer {
       text-align: center;
@@ -687,14 +782,15 @@
       <div class="logo">UFC<span>Stats</span></div>
       <div class="live-badge"><span class="live-dot"></span>LIVE</div>
     </div>
-    <div class="event-info">Fight Night 271 · Seattle · Mar 28, 2026</div>
+    <div class="event-info">Fight Night 271 · Seattle · Mar 28, 2026 &nbsp;·&nbsp; <span onclick="setApiKey()" style="cursor:pointer;color:var(--blue);text-decoration:underline;font-size:11px">⚙ Set API Key</span></div>
   </div>
 </header>
 
 <main class="main">
   <div class="tabs">
     <button class="tab active" onclick="switchTab('card', this)">Full Card</button>
-    <button class="tab" onclick="switchTab('custom', this)">Custom Fighter</button>
+    <button class="tab" onclick="switchTab('roster', this)">UFC Roster</button>
+    <button class="tab" onclick="switchTab('custom', this)">Custom</button>
   </div>
 
   <!-- CARD TAB -->
@@ -725,6 +821,50 @@
       </div>
     </div>
     <div id="fightDisplay"></div>
+  </div>
+
+  <!-- ROSTER TAB -->
+  <div id="rosterTab" style="display:none">
+    <p class="roster-hint">Search or filter by division, then tap a fighter to select them for Blue or Red corner. Tap again to deselect.</p>
+    <div class="roster-controls">
+      <div class="roster-search-wrap">
+        <span class="roster-search-icon">⌕</span>
+        <input id="rosterSearch" type="text" placeholder="Search fighter name..." oninput="filterRoster()" />
+      </div>
+      <select class="division-filter" id="divFilter" onchange="filterRoster()">
+        <option value="">All divisions</option>
+        <option value="Heavyweight">Heavyweight</option>
+        <option value="Light Heavyweight">Light Heavyweight</option>
+        <option value="Middleweight">Middleweight</option>
+        <option value="Welterweight">Welterweight</option>
+        <option value="Lightweight">Lightweight</option>
+        <option value="Featherweight">Featherweight</option>
+        <option value="Bantamweight">Bantamweight</option>
+        <option value="Flyweight">Flyweight</option>
+        <option value="Women's Bantamweight">W. Bantamweight</option>
+        <option value="Women's Flyweight">W. Flyweight</option>
+        <option value="Women's Strawweight">W. Strawweight</option>
+      </select>
+    </div>
+
+    <div class="roster-selected-bar">
+      <div style="text-align:right">
+        <div style="font-size:9px;color:var(--blue);font-weight:600;letter-spacing:.07em;margin-bottom:3px">BLUE CORNER</div>
+        <div id="selBlueDisplay" class="sel-empty">Tap a fighter below</div>
+      </div>
+      <div style="text-align:center">
+        <div style="background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:4px 10px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--text2)">VS</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-size:9px;color:var(--red);font-weight:600;letter-spacing:.07em;margin-bottom:3px">RED CORNER</div>
+        <div id="selRedDisplay" class="sel-empty">Tap a fighter below</div>
+      </div>
+    </div>
+
+    <button class="roster-compare-btn" id="rosterCompareBtn" onclick="runRosterCompare()" disabled>SELECT TWO FIGHTERS TO COMPARE</button>
+
+    <div id="rosterGrid" class="roster-grid"></div>
+    <div id="rosterResult"></div>
   </div>
 
   <!-- CUSTOM TAB -->
@@ -1287,11 +1427,215 @@ function selectFight(idx) {
   document.getElementById('fightDisplay').innerHTML = renderComp(f.a, f.b, f.wm, f.label, f.odds);
 }
 
+/* ══════════════════════════════════════
+   UFC ROSTER DATABASE
+   ══════════════════════════════════════ */
+const ROSTER = [
+  // HEAVYWEIGHT
+  {name:"Tom Aspinall",nick:"",div:"Heavyweight",rec:"15-3",rank:"C",age:31,reach:78,stance:"Orthodox",style:"Kickboxing / Wrestling",slpm:4.5,sacc:55,sdef:63,tdavg:1.2,tdacc:45,tddef:72,subavg:0.4,ko:7,sub:3,dec:5,form:"W W W W W",champ:true,hof:false,talent:{tier:"elite",striking:5,grappling:3,cardio:4,chin:4,wrestling:3,overall:5},wins:[]},
+  {name:"Ciryl Gane",nick:"Bon Gamin",div:"Heavyweight",rec:"13-2",rank:"#1",age:34,reach:84,stance:"Orthodox",style:"Muay Thai / Footwork",slpm:5.1,sacc:54,sdef:70,tdavg:0.5,tdacc:35,tddef:82,subavg:0.1,ko:6,sub:1,dec:6,form:"W L W W W",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:2,cardio:4,chin:3,wrestling:2,overall:4},wins:[]},
+  {name:"Sergei Pavlovich",nick:"",div:"Heavyweight",rec:"20-3",rank:"#3",age:32,reach:77,stance:"Orthodox",style:"Power Striking",slpm:5.8,sacc:59,sdef:62,tdavg:0.3,tdacc:25,tddef:60,subavg:0.1,ko:17,sub:0,dec:3,form:"W L W W L",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:1,cardio:3,chin:3,wrestling:1,overall:4},wins:[]},
+  {name:"Curtis Blaydes",nick:"Razor",div:"Heavyweight",rec:"19-5",rank:"#4",age:33,reach:80,stance:"Orthodox",style:"Wrestling / GnP",slpm:3.8,sacc:48,sdef:58,tdavg:3.8,tdacc:52,tddef:65,subavg:0.5,ko:10,sub:1,dec:8,form:"W L W W L",champ:false,hof:false,talent:{tier:"contender",striking:3,grappling:4,cardio:4,chin:3,wrestling:5,overall:4},wins:[]},
+  {name:"Jailton Almeida",nick:"Malhadinho",div:"Heavyweight",rec:"21-3",rank:"#5",age:31,reach:76,stance:"Orthodox",style:"BJJ / Wrestling",slpm:3.2,sacc:51,sdef:60,tdavg:4.1,tdacc:58,tddef:55,subavg:1.8,ko:5,sub:12,dec:4,form:"W L W W W",champ:false,hof:false,talent:{tier:"contender",striking:3,grappling:5,cardio:4,chin:4,wrestling:5,overall:4},wins:[]},
+
+  // LIGHT HEAVYWEIGHT
+  {name:"Alex Pereira",nick:"Poatan",div:"Light Heavyweight",rec:"12-3",rank:"C",age:37,reach:79,stance:"Orthodox",style:"Muay Thai / Power",slpm:5.2,sacc:53,sdef:58,tdavg:0.4,tdacc:28,tddef:68,subavg:0.2,ko:9,sub:0,dec:3,form:"W L W W W",champ:true,hof:false,talent:{tier:"elite",striking:5,grappling:2,cardio:3,chin:4,wrestling:2,overall:5},wins:[]},
+  {name:"Magomed Ankalaev",nick:"",div:"Light Heavyweight",rec:"21-2",rank:"#1",age:31,reach:75,stance:"Southpaw",style:"Striking / Grappling",slpm:3.9,sacc:50,sdef:66,tdavg:1.4,tdacc:42,tddef:75,subavg:0.6,ko:8,sub:4,dec:9,form:"W L W W W",champ:false,hof:false,talent:{tier:"elite",striking:4,grappling:4,cardio:4,chin:4,wrestling:4,overall:4},wins:[]},
+  {name:"Carlos Ulberg",nick:"",div:"Light Heavyweight",rec:"12-1",rank:"#2",age:30,reach:77,stance:"Orthodox",style:"Kickboxing",slpm:4.4,sacc:54,sdef:61,tdavg:0.2,tdacc:30,tddef:65,subavg:0.1,ko:10,sub:0,dec:2,form:"W W W W W",champ:false,hof:false,talent:{tier:"contender",striking:4,grappling:2,cardio:4,chin:4,wrestling:2,overall:4},wins:[]},
+  {name:"Jamahal Hill",nick:"Sweet Dreams",div:"Light Heavyweight",rec:"13-2",rank:"#3",age:33,reach:79,stance:"Orthodox",style:"Boxing / Kickboxing",slpm:5.5,sacc:52,sdef:54,tdavg:0.3,tdacc:22,tddef:63,subavg:0.1,ko:11,sub:0,dec:2,form:"L W W W W",champ:false,hof:false,talent:{tier:"contender",striking:5,grappling:2,cardio:4,chin:3,wrestling:1,overall:4},wins:[]},
+
+  // MIDDLEWEIGHT
+  {name:"Khamzat Chimaev",nick:"Borz",div:"Middleweight",rec:"15-0",rank:"C",age:30,reach:78,stance:"Orthodox",style:"Wrestling / GnP",slpm:4.8,sacc:56,sdef:64,tdavg:3.6,tdacc:64,tddef:70,subavg:0.8,ko:5,sub:4,dec:6,form:"W W W W W",champ:true,hof:false,talent:{tier:"elite",striking:4,grappling:5,cardio:5,chin:5,wrestling:5,overall:5},wins:[]},
+  {name:"Dricus Du Plessis",nick:"Stillknocks",div:"Middleweight",rec:"23-3",rank:"#1",age:30,reach:76,stance:"Southpaw",style:"Striking / Grappling",slpm:4.9,sacc:51,sdef:60,tdavg:1.8,tdacc:44,tddef:66,subavg:0.9,ko:9,sub:4,dec:10,form:"L W W W W",champ:false,hof:false,talent:{tier:"elite",striking:4,grappling:4,cardio:4,chin:4,wrestling:4,overall:5},wins:[]},
+  {name:"Sean Strickland",nick:"Tarzan",div:"Middleweight",rec:"30-7",rank:"#2",age:33,reach:76,stance:"Orthodox",style:"Boxing / Volume Striking",slpm:7.4,sacc:48,sdef:58,tdavg:0.5,tdacc:30,tddef:68,subavg:0.2,ko:7,sub:2,dec:21,form:"L W L W L",champ:false,hof:false,talent:{tier:"elite",striking:4,grappling:2,cardio:5,chin:4,wrestling:2,overall:4},wins:[]},
+  {name:"Israel Adesanya",nick:"The Last Stylebender",div:"Middleweight",rec:"24-5",rank:"#4",age:36,reach:80,stance:"Switch",style:"Kickboxing / Counter",slpm:4.02,sacc:51,sdef:56,tdavg:0.05,tdacc:11,tddef:50,subavg:0.14,ko:10,sub:0,dec:14,form:"L W L L L",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:3,cardio:4,chin:3,wrestling:2,overall:4},wins:[]},
+  {name:"Robert Whittaker",nick:"The Reaper",div:"Middleweight",rec:"26-7",rank:"#5",age:33,reach:73,stance:"Orthodox",style:"Boxing / Wrestling",slpm:5.2,sacc:50,sdef:58,tdavg:1.5,tdacc:40,tddef:70,subavg:0.3,ko:12,sub:1,dec:13,form:"W W L W L",champ:false,hof:false,talent:{tier:"elite",striking:4,grappling:3,cardio:4,chin:4,wrestling:3,overall:4},wins:[]},
+  {name:"Joe Pyfer",nick:"Bodybagz",div:"Middleweight",rec:"15-3",rank:"#14",age:29,reach:75,stance:"Orthodox",style:"Wrestling / Pressure",slpm:3.47,sacc:44,sdef:53,tdavg:1.23,tdacc:33,tddef:50,subavg:1.02,ko:9,sub:4,dec:2,form:"W W W L W",champ:false,hof:false,talent:{tier:"contender",striking:4,grappling:4,cardio:3,chin:4,wrestling:4,overall:3},wins:[]},
+  {name:"Bo Nickal",nick:"",div:"Middleweight",rec:"8-0",rank:"NR",age:28,reach:76,stance:"Orthodox",style:"Wrestling / Striking",slpm:3.8,sacc:52,sdef:65,tdavg:4.2,tdacc:66,tddef:72,subavg:1.0,ko:3,sub:3,dec:2,form:"W W W W W",champ:false,hof:false,talent:{tier:"prospect",striking:3,grappling:4,cardio:5,chin:4,wrestling:5,overall:4},wins:[]},
+
+  // WELTERWEIGHT
+  {name:"Islam Makhachev",nick:"",div:"Welterweight",rec:"28-1",rank:"C",age:32,reach:70,stance:"Orthodox",style:"Sambo / Grappling",slpm:4.1,sacc:55,sdef:68,tdavg:4.0,tdacc:59,tddef:72,subavg:1.5,ko:5,sub:10,dec:13,form:"W W W W W",champ:true,hof:false,talent:{tier:"elite",striking:4,grappling:5,cardio:5,chin:5,wrestling:5,overall:5},wins:[]},
+  {name:"Jack Della Maddalena",nick:"",div:"Welterweight",rec:"18-3",rank:"#1",age:28,reach:74,stance:"Orthodox",style:"Boxing / BJJ",slpm:5.8,sacc:56,sdef:60,tdavg:0.8,tdacc:38,tddef:68,subavg:0.5,ko:14,sub:2,dec:2,form:"L W W W W",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:3,cardio:4,chin:4,wrestling:3,overall:4},wins:[]},
+  {name:"Belal Muhammad",nick:"Remember the Name",div:"Welterweight",rec:"25-4",rank:"#2",age:36,reach:72,stance:"Orthodox",style:"Wrestling / BJJ",slpm:4.2,sacc:48,sdef:63,tdavg:3.2,tdacc:50,tddef:75,subavg:0.7,ko:5,sub:7,dec:13,form:"W W W W W",champ:false,hof:false,talent:{tier:"elite",striking:3,grappling:5,cardio:4,chin:4,wrestling:5,overall:4},wins:[]},
+  {name:"Leon Edwards",nick:"Rocky",div:"Welterweight",rec:"22-4",rank:"#3",age:32,reach:74,stance:"Orthodox",style:"Kickboxing / Wrestling",slpm:3.7,sacc:49,sdef:63,tdavg:1.8,tdacc:42,tddef:72,subavg:0.2,ko:8,sub:1,dec:13,form:"L W W W W",champ:false,hof:false,talent:{tier:"elite",striking:4,grappling:3,cardio:4,chin:4,wrestling:3,overall:4},wins:[]},
+  {name:"Gilbert Burns",nick:"Durinho",div:"Welterweight",rec:"23-7",rank:"#4",age:37,reach:71,stance:"Orthodox",style:"BJJ / Boxing",slpm:4.4,sacc:52,sdef:55,tdavg:1.5,tdacc:44,tddef:62,subavg:1.2,ko:7,sub:5,dec:11,form:"W W L W L",champ:false,hof:false,talent:{tier:"contender",striking:4,grappling:5,cardio:4,chin:3,wrestling:3,overall:4},wins:[]},
+  {name:"Shavkat Rakhmonov",nick:"Nomad",div:"Welterweight",rec:"18-0",rank:"#5",age:29,reach:74,stance:"Orthodox",style:"Sambo / Striking",slpm:5.0,sacc:58,sdef:65,tdavg:2.0,tdacc:50,tddef:68,subavg:1.4,ko:8,sub:8,dec:2,form:"W W W W W",champ:false,hof:false,talent:{tier:"elite",striking:4,grappling:5,cardio:4,chin:5,wrestling:4,overall:5},wins:[]},
+  {name:"Kamaru Usman",nick:"The Nigerian Nightmare",div:"Welterweight",rec:"21-5",rank:"NR",age:37,reach:76,stance:"Orthodox",style:"Wrestling / Boxing",slpm:4.6,sacc:49,sdef:60,tdavg:3.1,tdacc:46,tddef:72,subavg:0.2,ko:10,sub:1,dec:10,form:"L L W L W",champ:false,hof:false,talent:{tier:"elite",striking:4,grappling:4,cardio:5,chin:4,wrestling:5,overall:4},wins:[]},
+
+  // LIGHTWEIGHT
+  {name:"Ilia Topuria",nick:"El Matador",div:"Lightweight",rec:"17-0",rank:"C",age:27,reach:71,stance:"Orthodox",style:"Boxing / BJJ",slpm:5.5,sacc:58,sdef:66,tdavg:1.6,tdacc:44,tddef:75,subavg:0.9,ko:11,sub:4,dec:2,form:"W W W W W",champ:true,hof:false,talent:{tier:"elite",striking:5,grappling:4,cardio:5,chin:5,wrestling:4,overall:5},wins:[]},
+  {name:"Arman Tsarukyan",nick:"Ahalkalakets",div:"Lightweight",rec:"23-3",rank:"#1",age:27,reach:70,stance:"Orthodox",style:"Wrestling / Striking",slpm:5.1,sacc:51,sdef:60,tdavg:2.8,tdacc:48,tddef:70,subavg:0.6,ko:9,sub:5,dec:9,form:"W W W L W",champ:false,hof:false,talent:{tier:"elite",striking:4,grappling:4,cardio:5,chin:4,wrestling:4,overall:4},wins:[]},
+  {name:"Justin Gaethje",nick:"The Highlight",div:"Lightweight",rec:"26-5",rank:"#2",age:36,reach:70,stance:"Orthodox",style:"Pressure / Power Striking",slpm:5.8,sacc:46,sdef:50,tdavg:1.2,tdacc:38,tddef:62,subavg:0.3,ko:16,sub:1,dec:9,form:"W L W W L",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:2,cardio:4,chin:3,wrestling:3,overall:4},wins:[]},
+  {name:"Charles Oliveira",nick:"Do Bronx",div:"Lightweight",rec:"34-10",rank:"#3",age:35,reach:74,stance:"Orthodox",style:"BJJ / Striking",slpm:3.8,sacc:46,sdef:54,tdavg:1.5,tdacc:36,tddef:58,subavg:2.0,ko:10,sub:22,dec:2,form:"L W L W W",champ:false,hof:false,talent:{tier:"elite",striking:3,grappling:5,cardio:4,chin:3,wrestling:3,overall:4},wins:[]},
+  {name:"Michael Chandler",nick:"Iron",div:"Lightweight",rec:"24-9",rank:"NR",age:38,reach:69,stance:"Orthodox",style:"Wrestling / Striking",slpm:5.1,sacc:48,sdef:52,tdavg:1.9,tdacc:44,tddef:60,subavg:0.5,ko:13,sub:4,dec:7,form:"L W L L W",champ:false,hof:false,talent:{tier:"veteran",striking:4,grappling:3,cardio:4,chin:3,wrestling:4,overall:4},wins:[]},
+  {name:"Max Holloway",nick:"Blessed",div:"Lightweight",rec:"27-8",rank:"NR",age:33,reach:69,stance:"Orthodox",style:"Volume Boxing / Pressure",slpm:7.9,sacc:47,sdef:55,tdavg:0.5,tdacc:28,tddef:65,subavg:0.1,ko:13,sub:1,dec:13,form:"W W W L W",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:2,cardio:5,chin:4,wrestling:1,overall:4},wins:[]},
+  {name:"Conor McGregor",nick:"The Notorious",div:"Lightweight",rec:"22-6",rank:"NR",age:36,reach:74,stance:"Southpaw",style:"Boxing / Counter-striking",slpm:5.3,sacc:53,sdef:57,tdavg:0.5,tdacc:30,tddef:68,subavg:0.1,ko:19,sub:1,dec:2,form:"L L W L W",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:3,cardio:3,chin:2,wrestling:1,overall:4},wins:[]},
+
+  // FEATHERWEIGHT
+  {name:"Alexander Volkanovski",nick:"The Great",div:"Featherweight",rec:"27-4",rank:"C",age:35,reach:71,stance:"Orthodox",style:"Wrestling / Boxing",slpm:5.9,sacc:56,sdef:60,tdavg:2.0,tdacc:44,tddef:73,subavg:0.5,ko:11,sub:2,dec:14,form:"W L W W W",champ:true,hof:false,talent:{tier:"elite",striking:5,grappling:4,cardio:5,chin:5,wrestling:5,overall:5},wins:[]},
+  {name:"Movsar Evloev",nick:"",div:"Featherweight",rec:"18-0",rank:"#1",age:29,reach:72,stance:"Orthodox",style:"Wrestling / Striking",slpm:3.5,sacc:50,sdef:62,tdavg:2.4,tdacc:48,tddef:70,subavg:0.4,ko:4,sub:3,dec:11,form:"W W W W W",champ:false,hof:false,talent:{tier:"contender",striking:3,grappling:4,cardio:4,chin:4,wrestling:5,overall:4},wins:[]},
+  {name:"Lerone Murphy",nick:"The Miracle",div:"Featherweight",rec:"17-0",rank:"#2",age:31,reach:72,stance:"Orthodox",style:"Boxing / Wrestling",slpm:4.6,sacc:54,sdef:65,tdavg:1.2,tdacc:42,tddef:72,subavg:0.3,ko:8,sub:2,dec:7,form:"W W W W W",champ:false,hof:false,talent:{tier:"contender",striking:4,grappling:3,cardio:4,chin:4,wrestling:3,overall:4},wins:[]},
+  {name:"Yair Rodriguez",nick:"El Pantera",div:"Featherweight",rec:"16-5",rank:"#3",age:31,reach:71,stance:"Orthodox",style:"Unorthodox Striking",slpm:4.9,sacc:44,sdef:61,tdavg:0.3,tdacc:20,tddef:72,subavg:0.2,ko:9,sub:2,dec:5,form:"W L W L W",champ:false,hof:false,talent:{tier:"contender",striking:5,grappling:3,cardio:4,chin:3,wrestling:1,overall:4},wins:[]},
+  {name:"Brian Ortega",nick:"T-City",div:"Featherweight",rec:"16-3",rank:"NR",age:33,reach:69,stance:"Orthodox",style:"BJJ / Striking",slpm:2.9,sacc:46,sdef:56,tdavg:1.0,tdacc:32,tddef:58,subavg:1.5,ko:5,sub:8,dec:3,form:"L W L W W",champ:false,hof:false,talent:{tier:"contender",striking:3,grappling:5,cardio:4,chin:4,wrestling:3,overall:4},wins:[]},
+
+  // BANTAMWEIGHT
+  {name:"Petr Yan",nick:"No Mercy",div:"Bantamweight",rec:"19-5",rank:"C",age:31,reach:67,stance:"Orthodox",style:"Boxing / Wrestling",slpm:5.1,sacc:52,sdef:60,tdavg:1.5,tdacc:45,tddef:68,subavg:0.5,ko:11,sub:1,dec:7,form:"W W L W W",champ:true,hof:false,talent:{tier:"elite",striking:5,grappling:4,cardio:5,chin:4,wrestling:4,overall:5},wins:[]},
+  {name:"Merab Dvalishvili",nick:"The Machine",div:"Bantamweight",rec:"21-4",rank:"#1",age:33,reach:67,stance:"Orthodox",style:"Wrestling / Volume",slpm:4.8,sacc:47,sdef:57,tdavg:7.2,tdacc:52,tddef:72,subavg:0.5,ko:5,sub:5,dec:11,form:"L W W W W",champ:false,hof:false,talent:{tier:"elite",striking:3,grappling:4,cardio:5,chin:4,wrestling:5,overall:4},wins:[]},
+  {name:"Sean O'Malley",nick:"Suga",div:"Bantamweight",rec:"18-2",rank:"#2",age:30,reach:72,stance:"Southpaw",style:"Boxing / Kickboxing",slpm:6.5,sacc:57,sdef:61,tdavg:0.2,tdacc:20,tddef:70,subavg:0.1,ko:14,sub:1,dec:3,form:"L W W W W",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:2,cardio:3,chin:3,wrestling:1,overall:4},wins:[]},
+  {name:"Cory Sandhagen",nick:"Sandman",div:"Bantamweight",rec:"18-4",rank:"#3",age:32,reach:70,stance:"Orthodox",style:"Kickboxing / BJJ",slpm:5.7,sacc:52,sdef:61,tdavg:0.8,tdacc:36,tddef:68,subavg:0.8,ko:9,sub:5,dec:4,form:"W W L W W",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:4,cardio:4,chin:3,wrestling:2,overall:4},wins:[]},
+  {name:"Marlon Vera",nick:"Chito",div:"Bantamweight",rec:"22-9",rank:"#4",age:31,reach:66,stance:"Orthodox",style:"Muay Thai / Wrestling",slpm:4.5,sacc:48,sdef:56,tdavg:1.4,tdacc:38,tddef:60,subavg:0.5,ko:9,sub:6,dec:7,form:"L W L W W",champ:false,hof:false,talent:{tier:"contender",striking:4,grappling:4,cardio:4,chin:3,wrestling:3,overall:4},wins:[]},
+
+  // FLYWEIGHT
+  {name:"Joshua Van",nick:"The Fearless",div:"Flyweight",rec:"15-2",rank:"C",age:28,reach:66,stance:"Orthodox",style:"Muay Thai / Wrestling",slpm:4.9,sacc:53,sdef:63,tdavg:2.2,tdacc:47,tddef:68,subavg:0.6,ko:8,sub:3,dec:4,form:"W W W W W",champ:true,hof:false,talent:{tier:"elite",striking:4,grappling:4,cardio:4,chin:4,wrestling:4,overall:4},wins:[]},
+  {name:"Alexandre Pantoja",nick:"The Cannibal",div:"Flyweight",rec:"30-5",rank:"#1",age:33,reach:67,stance:"Orthodox",style:"BJJ / Striking",slpm:4.0,sacc:50,sdef:57,tdavg:2.5,tdacc:44,tddef:62,subavg:1.8,ko:8,sub:10,dec:12,form:"L W W W W",champ:false,hof:false,talent:{tier:"elite",striking:3,grappling:5,cardio:4,chin:4,wrestling:4,overall:4},wins:[]},
+  {name:"Kai Kara-France",nick:"Don't Blink",div:"Flyweight",rec:"25-11",rank:"#2",age:31,reach:65,stance:"Orthodox",style:"Kickboxing",slpm:6.4,sacc:52,sdef:58,tdavg:0.4,tdacc:30,tddef:65,subavg:0.3,ko:14,sub:1,dec:10,form:"W L W W L",champ:false,hof:false,talent:{tier:"contender",striking:5,grappling:2,cardio:4,chin:3,wrestling:2,overall:3},wins:[]},
+  {name:"Brandon Royval",nick:"Raw Dawg",div:"Flyweight",rec:"17-8",rank:"#3",age:31,reach:67,stance:"Orthodox",style:"Submission / Striking",slpm:4.8,sacc:50,sdef:50,tdavg:2.5,tdacc:42,tddef:55,subavg:2.2,ko:4,sub:10,dec:3,form:"L W W L W",champ:false,hof:false,talent:{tier:"contender",striking:3,grappling:5,cardio:4,chin:3,wrestling:3,overall:3},wins:[]},
+
+  // WOMEN'S BANTAMWEIGHT
+  {name:"Kayla Harrison",nick:"",div:"Women's Bantamweight",rec:"18-1",rank:"C",age:34,reach:69,stance:"Orthodox",style:"Judo / Wrestling",slpm:3.8,sacc:48,sdef:62,tdavg:3.5,tdacc:52,tddef:70,subavg:0.8,ko:5,sub:6,dec:7,form:"W W W W W",champ:true,hof:false,talent:{tier:"elite",striking:3,grappling:5,cardio:4,chin:4,wrestling:5,overall:4},wins:[]},
+  {name:"Raquel Pennington",nick:"Rocky",div:"Women's Bantamweight",rec:"16-9",rank:"#1",age:35,reach:66,stance:"Orthodox",style:"Boxing / Wrestling",slpm:3.9,sacc:44,sdef:57,tdavg:1.6,tdacc:40,tddef:62,subavg:0.4,ko:4,sub:1,dec:11,form:"L W W L W",champ:false,hof:false,talent:{tier:"veteran",striking:3,grappling:3,cardio:4,chin:4,wrestling:3,overall:3},wins:[]},
+
+  // WOMEN'S FLYWEIGHT
+  {name:"Valentina Shevchenko",nick:"Bullet",div:"Women's Flyweight",rec:"24-5",rank:"#1",age:36,reach:67,stance:"Southpaw",style:"Muay Thai / Wrestling",slpm:4.6,sacc:52,sdef:65,tdavg:2.2,tdacc:48,tddef:72,subavg:0.6,ko:10,sub:4,dec:10,form:"L W W L W",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:5,cardio:5,chin:4,wrestling:4,overall:5},wins:[]},
+  {name:"Alexa Grasso",nick:"",div:"Women's Flyweight",rec:"16-5",rank:"#3",age:32,reach:66,stance:"Orthodox",style:"Muay Thai / Submission",slpm:4.11,sacc:41,sdef:58,tdavg:0.41,tdacc:35,tddef:54,subavg:0.7,ko:4,sub:2,dec:10,form:"L L L W W",champ:false,hof:false,talent:{tier:"elite",striking:4,grappling:5,cardio:4,chin:4,wrestling:3,overall:4},wins:[]},
+  {name:"Maycee Barber",nick:"The Future",div:"Women's Flyweight",rec:"15-2",rank:"#5",age:27,reach:65,stance:"Switch",style:"Wrestling / Striking",slpm:4.61,sacc:53,sdef:54,tdavg:1.58,tdacc:45,tddef:51,subavg:0.5,ko:6,sub:2,dec:7,form:"W W W W L",champ:false,hof:false,talent:{tier:"contender",striking:4,grappling:3,cardio:4,chin:4,wrestling:4,overall:4},wins:[]},
+  {name:"Natalia Silva",nick:"",div:"Women's Flyweight",rec:"19-5",rank:"#4",age:32,reach:66,stance:"Orthodox",style:"Boxing / Submission",slpm:4.8,sacc:49,sdef:58,tdavg:1.2,tdacc:38,tddef:60,subavg:1.1,ko:5,sub:7,dec:7,form:"W W L W W",champ:false,hof:false,talent:{tier:"contender",striking:4,grappling:4,cardio:4,chin:4,wrestling:3,overall:4},wins:[]},
+  {name:"Casey O'Neill",nick:"King KC",div:"Women's Flyweight",rec:"10-2",rank:"NR",age:27,reach:64,stance:"Orthodox",style:"Muay Thai / Wrestling",slpm:3.8,sacc:47,sdef:55,tdavg:1.6,tdacc:45,tddef:58,subavg:0.8,ko:4,sub:3,dec:3,form:"L L W W W",champ:false,hof:false,talent:{tier:"contender",striking:4,grappling:3,cardio:3,chin:3,wrestling:4,overall:3},wins:[]},
+
+  // WOMEN'S STRAWWEIGHT
+  {name:"Mackenzie Dern",nick:"",div:"Women's Strawweight",rec:"14-5",rank:"C",age:31,reach:65,stance:"Orthodox",style:"BJJ / Striking",slpm:3.2,sacc:44,sdef:56,tdavg:2.8,tdacc:50,tddef:60,subavg:2.5,ko:1,sub:9,dec:4,form:"W W L W W",champ:true,hof:false,talent:{tier:"elite",striking:2,grappling:5,cardio:4,chin:4,wrestling:4,overall:4},wins:[]},
+  {name:"Tatiana Suarez",nick:"",div:"Women's Strawweight",rec:"11-0",rank:"#1",age:31,reach:64,stance:"Orthodox",style:"Wrestling / GnP",slpm:2.5,sacc:44,sdef:62,tdavg:5.0,tdacc:60,tddef:78,subavg:1.0,ko:2,sub:4,dec:5,form:"W W W W W",champ:false,hof:false,talent:{tier:"elite",striking:2,grappling:4,cardio:5,chin:4,wrestling:5,overall:5},wins:[]},
+  {name:"Zhang Weili",nick:"Magnum",div:"Women's Strawweight",rec:"25-4",rank:"#2",age:34,reach:63,stance:"Orthodox",style:"Wushu / Striking",slpm:5.2,sacc:54,sdef:62,tdavg:2.0,tdacc:44,tddef:66,subavg:0.4,ko:11,sub:2,dec:12,form:"L W W L W",champ:false,hof:false,talent:{tier:"elite",striking:5,grappling:4,cardio:5,chin:4,wrestling:3,overall:5},wins:[]},
+  {name:"Yan Xiaonan",nick:"Fury",div:"Women's Strawweight",rec:"20-4",rank:"#3",age:35,reach:65,stance:"Orthodox",style:"Muay Thai / Striking",slpm:5.0,sacc:50,sdef:58,tdavg:0.8,tdacc:35,tddef:62,subavg:0.2,ko:5,sub:1,dec:14,form:"W L W W W",champ:false,hof:false,talent:{tier:"contender",striking:4,grappling:2,cardio:4,chin:4,wrestling:2,overall:3},wins:[]},
+  {name:"Virna Jandiroba",nick:"Carcará",div:"Women's Strawweight",rec:"21-5",rank:"#4",age:34,reach:64,stance:"Orthodox",style:"BJJ / Striking",slpm:3.8,sacc:47,sdef:58,tdavg:2.0,tdacc:42,tddef:64,subavg:1.6,ko:3,sub:11,dec:7,form:"W W L W W",champ:false,hof:false,talent:{tier:"contender",striking:3,grappling:5,cardio:4,chin:4,wrestling:3,overall:4},wins:[]}
+];
+
+/* ── Roster state ── */
+let rosterBlue = null;
+let rosterRed = null;
+
+function renderRosterGrid() {
+  filterRoster();
+}
+
+function filterRoster() {
+  const q = (document.getElementById('rosterSearch').value || '').toLowerCase().trim();
+  const div = document.getElementById('divFilter').value;
+  const grid = document.getElementById('rosterGrid');
+  const filtered = ROSTER.filter(f => {
+    const matchName = !q || f.name.toLowerCase().includes(q) || (f.nick && f.nick.toLowerCase().includes(q));
+    const matchDiv = !div || f.div === div;
+    return matchName && matchDiv;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="no-results">No fighters found matching your search</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(f => {
+    const isBlue = rosterBlue && rosterBlue.name === f.name;
+    const isRed = rosterRed && rosterRed.name === f.name;
+    const selClass = isBlue ? 'selected-blue' : isRed ? 'selected-red' : '';
+    return `<div class="fighter-card ${selClass}" onclick="toggleRosterFighter('${f.name.replace(/'/g,"\\'")}')">
+      <div class="fc-name">${f.name}${f.champ ? '<span class="fc-champ">CHAMP</span>' : ''}${f.hof ? '<span class="fc-hof">HOF</span>' : ''}</div>
+      <div class="fc-rec">${f.rec} ${f.rank !== 'NR' ? '· ' + f.rank : ''}</div>
+      <div class="fc-div">${f.div}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleRosterFighter(name) {
+  const fighter = ROSTER.find(f => f.name === name);
+  if (!fighter) return;
+
+  // If already selected in blue, deselect
+  if (rosterBlue && rosterBlue.name === name) {
+    rosterBlue = null;
+  // If already selected in red, deselect
+  } else if (rosterRed && rosterRed.name === name) {
+    rosterRed = null;
+  // If blue is empty, fill blue
+  } else if (!rosterBlue) {
+    rosterBlue = fighter;
+  // If red is empty, fill red
+  } else if (!rosterRed) {
+    rosterRed = fighter;
+  // Both full — replace blue (oldest selection)
+  } else {
+    rosterBlue = rosterRed;
+    rosterRed = fighter;
+  }
+
+  updateRosterBar();
+  filterRoster(); // re-render to update highlight
+}
+
+function updateRosterBar() {
+  const blueEl = document.getElementById('selBlueDisplay');
+  const redEl = document.getElementById('selRedDisplay');
+  const btn = document.getElementById('rosterCompareBtn');
+
+  if (rosterBlue) {
+    blueEl.innerHTML = `<span class="sel-fighter" style="color:var(--blue)">${rosterBlue.name}</span><br><span style="font-size:10px;color:var(--text3)">${rosterBlue.rec} · ${rosterBlue.div}</span>`;
+  } else {
+    blueEl.className = 'sel-empty';
+    blueEl.textContent = 'Tap a fighter below';
+  }
+
+  if (rosterRed) {
+    redEl.innerHTML = `<span class="sel-fighter" style="color:var(--red)">${rosterRed.name}</span><br><span style="font-size:10px;color:var(--text3)">${rosterRed.rec} · ${rosterRed.div}</span>`;
+  } else {
+    redEl.className = 'sel-empty';
+    redEl.textContent = 'Tap a fighter below';
+  }
+
+  if (rosterBlue && rosterRed) {
+    btn.disabled = false;
+    btn.textContent = `COMPARE: ${rosterBlue.name.split(' ').slice(-1)[0]} vs ${rosterRed.name.split(' ').slice(-1)[0]} →`;
+  } else {
+    btn.disabled = true;
+    btn.textContent = 'SELECT TWO FIGHTERS TO COMPARE';
+  }
+}
+
+function runRosterCompare() {
+  if (!rosterBlue || !rosterRed) return;
+  const a = rosterBlue;
+  const b = rosterRed;
+
+  // Build wm prediction
+  const prob = calcProb(a, b);
+  const winner = prob[0] >= prob[1] ? a : b;
+  const loser = prob[0] >= prob[1] ? b : a;
+  const wKo = prob[0] >= prob[1] ? a.ko : b.ko;
+  const wSub = prob[0] >= prob[1] ? a.sub : b.sub;
+  const wDec = prob[0] >= prob[1] ? a.dec : b.dec;
+  let method = 'dec', pick = winner.name.split(' ').slice(-1)[0] + ' Decision';
+  if (wKo + wSub > wDec) {
+    if (wKo >= wSub) { method = 'ko'; pick = winner.name.split(' ').slice(-1)[0] + ' KO/TKO'; }
+    else { method = 'sub'; pick = winner.name.split(' ').slice(-1)[0] + ' Submission'; }
+  }
+
+  const diffNote = a.div !== b.div ? ` (Cross-division: ${a.div} vs ${b.div})` : '';
+  const wm = {
+    pick,
+    method,
+    reason: `${winner.name} projected winner at ${Math.max(prob[0],prob[1])}% probability based on striking accuracy (${winner===a?a.sacc:b.sacc}% vs ${winner===a?b.sacc:a.sacc}%), finish rate, reach, form, and grappling stats.${diffNote}`
+  };
+
+  const result = document.getElementById('rosterResult');
+  result.innerHTML = renderComp(a, b, wm, `${a.div} · Roster Matchup`, null);
+  result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function switchTab(tab, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('cardTab').style.display = tab === 'card' ? 'block' : 'none';
+  document.getElementById('rosterTab').style.display = tab === 'roster' ? 'block' : 'none';
   document.getElementById('customTab').style.display = tab === 'custom' ? 'block' : 'none';
+  if (tab === 'roster' && !document.getElementById('rosterGrid').children.length) renderRosterGrid();
 }
 
 function g(id) { return document.getElementById(id).value; }
@@ -1336,22 +1680,58 @@ function runCustom() {
 
 selectFight(0);
 
-async function runDeepAnalysis(btn, aName, bName, aRec, bRec, aStyle, bStyle, aSacc, bSacc, aSdef, bSdef, aTdacc, bTdacc, aKo, bKo, aSub, bSub, probA, probB, pick) {
-  const panel = document.getElementById('aiPanel');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="btn-icon">⚡</span> Analyzing...';
+/* ── Key entry modal ── */
+function showKeyModal(onSubmit) {
+  const existing = document.getElementById('keyModal');
+  if (existing) existing.remove();
 
-  panel.innerHTML = `
-    <div class="ai-panel">
-      <div class="ai-panel-header">
-        <span class="ai-label">AI Deep Analysis</span>
-        <span class="ai-model-badge">Claude Sonnet</span>
+  const modal = document.createElement('div');
+  modal.id = 'keyModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem';
+  modal.innerHTML = `
+    <div style="background:#18181c;border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:1.5rem;max-width:420px;width:100%">
+      <div style="font-family:Barlow Condensed,sans-serif;font-size:18px;font-weight:700;margin-bottom:6px">Enter Anthropic API Key</div>
+      <div style="font-size:12px;color:#a0a0a8;margin-bottom:16px;line-height:1.6">
+        Your key is stored only in your browser's session memory — it's never sent anywhere except directly to Anthropic's servers.<br><br>
+        Get a free key at <strong style="color:#3b82f6">console.anthropic.com</strong> → API Keys
       </div>
-      <div class="ai-thinking">
-        Generating breakdown
-        <div class="ai-thinking-dots"><span></span><span></span><span></span></div>
+      <input id="keyInput" type="password" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false"
+        style="width:100%;padding:10px 12px;font-size:13px;background:#0a0a0b;color:#f0f0f0;border:1px solid rgba(255,255,255,.2);border-radius:8px;font-family:monospace;margin-bottom:12px;outline:none" />
+      <div id="keyError" style="font-size:11px;color:#ef4444;margin-bottom:10px;display:none"></div>
+      <div style="display:flex;gap:8px">
+        <button id="keyCancelBtn" style="flex:1;padding:9px;font-size:13px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#a0a0a8;border-radius:8px;cursor:pointer;font-family:Barlow,sans-serif">Cancel</button>
+        <button id="keySubmitBtn" style="flex:2;padding:9px;font-size:13px;font-weight:600;border:none;background:#3b82f6;color:#fff;border-radius:8px;cursor:pointer;font-family:Barlow,sans-serif">Start Analysis</button>
       </div>
     </div>`;
+
+  document.body.appendChild(modal);
+  const input = document.getElementById('keyInput');
+  const errEl = document.getElementById('keyError');
+  setTimeout(() => input.focus(), 50);
+
+  document.getElementById('keyCancelBtn').onclick = () => { modal.remove(); onSubmit(null); };
+  modal.onclick = (e) => { if (e.target === modal) { modal.remove(); onSubmit(null); } };
+
+  function submit() {
+    const val = input.value.trim();
+    if (!val) { errEl.textContent = 'Please paste your API key.'; errEl.style.display='block'; return; }
+    if (!val.startsWith('sk-ant-')) { errEl.textContent = 'Key should start with sk-ant- — check you copied the full key.'; errEl.style.display='block'; return; }
+    modal.remove();
+    onSubmit(val);
+  }
+
+  document.getElementById('keySubmitBtn').onclick = submit;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+}
+
+function getApiKey(callback) {
+  const stored = sessionStorage.getItem('ufc_ak');
+  if (stored) { callback(stored); return; }
+  showKeyModal(key => { if (key) { sessionStorage.setItem('ufc_ak', key); callback(key); } else { callback(null); } });
+}
+
+async function runDeepAnalysis(btn, aName, bName, aRec, bRec, aStyle, bStyle, aSacc, bSacc, aSdef, bSdef, aTdacc, bTdacc, aKo, bKo, aSub, bSub, probA, probB, pick) {
+  const panel = document.getElementById('aiPanel');
 
   const prompt = `You are an expert MMA analyst. Give a deep fight breakdown for: ${aName} (${aRec}, ${aStyle}, str acc ${aSacc}%, str def ${aSdef}%, TD acc ${aTdacc}%, KO wins ${aKo}, Sub wins ${aSub}) vs ${bName} (${bRec}, ${bStyle}, str acc ${bSacc}%, str def ${bSdef}%, TD acc ${bTdacc}%, KO wins ${bKo}, Sub wins ${bSub}). Win probability: ${aName.split(' ')[0]} ${probA}% — ${bName.split(' ')[0]} ${probB}%. Predicted method: ${pick}.
 
@@ -1363,23 +1743,11 @@ Write a sharp, punchy breakdown covering:
 
 Be direct and specific. Use the stats to back your points. Keep it under 400 words total.`;
 
-  try {
-    const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
+  getApiKey(async (apiKey) => {
+    if (!apiKey) return;
 
-    if (!response.ok) {
-      let errMsg = `HTTP ${response.status}`;
-      try {
-        const errJson = await response.json();
-        errMsg = errJson.error || errMsg;
-      } catch {}
-      throw new Error(errMsg);
-    }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="btn-icon">⚡</span> Analyzing...';
 
     panel.innerHTML = `
       <div class="ai-panel">
@@ -1387,64 +1755,105 @@ Be direct and specific. Use the stats to back your points. Keep it under 400 wor
           <span class="ai-label">AI Deep Analysis</span>
           <span class="ai-model-badge">Claude Sonnet</span>
         </div>
-        <div class="ai-content" id="aiContent"></div>
-      </div>`;
-
-    const contentEl = document.getElementById('aiContent');
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let fullText = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') continue;
-        try {
-          const evt = JSON.parse(data);
-          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
-            fullText += evt.delta.text;
-            contentEl.innerHTML = formatAIText(fullText) + '<span style="opacity:.5">▋</span>';
-          }
-        } catch {}
-      }
-    }
-    contentEl.innerHTML = formatAIText(fullText);
-    btn.innerHTML = '<span class="btn-icon">⚡</span> Regenerate Analysis';
-    btn.disabled = false;
-
-  } catch (err) {
-    const msg = err.message || 'Unknown error';
-    const isKeyMissing = msg.toLowerCase().includes('anthropic_api_key') || msg.toLowerCase().includes('not set') || msg.toLowerCase().includes('environment');
-    const is404 = msg.includes('404') || msg.includes('not found');
-    const is401 = msg.includes('401') || msg.includes('unauthorized') || msg.includes('authentication');
-    const is500 = msg.includes('500');
-
-    let hint = '';
-    if (is404) {
-      hint = '<strong>404 — the /api/analyze function was not found.</strong><br>Make sure the <code>api/analyze.js</code> file is in your GitHub repo inside a folder called <code>api</code>, then redeploy on Vercel.';
-    } else if (isKeyMissing || is500) {
-      hint = '<strong>API key missing or not loaded.</strong><br>1. Go to Vercel → your project → Settings → Environment Variables<br>2. Add <code>ANTHROPIC_API_KEY</code> with your key<br>3. Go to Deployments → three dots → Redeploy';
-    } else if (is401) {
-      hint = '<strong>Invalid API key.</strong><br>Your key may be wrong or expired. Get a fresh one from <code>console.anthropic.com</code> → API Keys, then update it in Vercel Environment Variables and redeploy.';
-    } else {
-      hint = '<strong>Check your browser console (F12) for more detail.</strong>';
-    }
-
-    panel.innerHTML = `
-      <div class="ai-panel">
-        <div class="ai-error">
-          <strong>Error: ${msg}</strong><br><br>${hint}
+        <div class="ai-thinking">Generating breakdown
+          <div class="ai-thinking-dots"><span></span><span></span><span></span></div>
         </div>
       </div>`;
-    btn.innerHTML = '<span class="btn-icon">⚡</span> Deep AI Analysis';
-    btn.disabled = false;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          stream: true,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!response.ok) {
+        let errMsg = `HTTP ${response.status}`;
+        try { const j = await response.json(); errMsg = (j.error && j.error.message) ? j.error.message : JSON.stringify(j.error || j); } catch {}
+        throw new Error(errMsg);
+      }
+
+      panel.innerHTML = `
+        <div class="ai-panel">
+          <div class="ai-panel-header">
+            <span class="ai-label">AI Deep Analysis</span>
+            <span class="ai-model-badge">Claude Sonnet</span>
+            <button onclick="sessionStorage.removeItem('ufc_ak');this.closest('.ai-panel').querySelector('.ai-label').textContent='Key cleared — click ⚡ to re-enter'" style="margin-left:auto;font-size:10px;padding:2px 8px;border:1px solid rgba(255,255,255,.15);background:transparent;color:#5a5a65;border-radius:4px;cursor:pointer">Change key</button>
+          </div>
+          <div class="ai-content" id="aiContent"></div>
+        </div>`;
+
+      const contentEl = document.getElementById('aiContent');
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '', fullText = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6).trim();
+          if (data === '[DONE]') continue;
+          try {
+            const evt = JSON.parse(data);
+            if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+              fullText += evt.delta.text;
+              contentEl.innerHTML = formatAIText(fullText) + '<span style="opacity:.5">▋</span>';
+            }
+          } catch {}
+        }
+      }
+      contentEl.innerHTML = formatAIText(fullText);
+      btn.innerHTML = '<span class="btn-icon">⚡</span> Regenerate Analysis';
+      btn.disabled = false;
+
+    } catch (err) {
+      const msg = err.message || 'Unknown error';
+      const is401 = msg.includes('401') || msg.toLowerCase().includes('auth') || msg.toLowerCase().includes('invalid x-api-key') || msg.toLowerCase().includes('invalid api key');
+      if (is401) sessionStorage.removeItem('ufc_ak');
+
+      panel.innerHTML = `
+        <div class="ai-panel">
+          <div class="ai-error">
+            <strong>${is401 ? 'Invalid API key — cleared.' : 'Error: ' + msg}</strong><br><br>
+            ${is401
+              ? 'Click ⚡ again to re-enter your key. Make sure you copy the full key starting with <code>sk-ant-</code> from <strong>console.anthropic.com → API Keys</strong>.'
+              : 'Check your Anthropic account has credits at <strong>console.anthropic.com → Billing</strong>, then try again.'}
+          </div>
+        </div>`;
+      btn.innerHTML = '<span class="btn-icon">⚡</span> Deep AI Analysis';
+      btn.disabled = false;
+    }
+  });
+}
+
+function setApiKey() {
+  const current = sessionStorage.getItem('anthropic_key');
+  const entered = window.prompt(
+    'Enter your Anthropic API key (starts with sk-ant-).\nGet one free at console.anthropic.com → API Keys\n\nLeave blank and click OK to clear the saved key.',
+    current || ''
+  );
+  if (entered === null) return; // user hit Cancel
+  if (entered.trim() === '') {
+    sessionStorage.removeItem('anthropic_key');
+    alert('API key cleared.');
+  } else {
+    sessionStorage.setItem('anthropic_key', entered.trim());
+    alert('API key saved for this session. Click ⚡ Deep AI Analysis to test it.');
   }
 }
 
